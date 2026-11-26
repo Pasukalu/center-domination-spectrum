@@ -153,7 +153,8 @@ theorem center_edge_card [Fintype S] (a : S) :
     exact Prod.ext (Fan.spoke.inj (congrArg Prod.fst e)) (Fan.spoke.inj (congrArg Prod.snd e))
   have ac : A.card = 2 * Nat.card H.edgeSet := by
     change (Finset.univ.filter (fun (x, y) => H.Adj x y)).card = 2 * Nat.card H.edgeSet
-    rw [← SimpleGraph.two_mul_card_edgeFinset, Nat.card_eq_fintype_card, SimpleGraph.edgeFinset_card]
+    rw [Nat.card_eq_fintype_card, ← SimpleGraph.edgeFinset_card]
+    exact (SimpleGraph.two_mul_card_edgeFinset H).symm
   have count := center_adj_pairs_card (graph H)
   rw [eq, Finset.card_union_of_disjoint dE, Finset.card_union_of_disjoint dLR,
     lc, rc, ec, ac] at count
