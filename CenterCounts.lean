@@ -898,3 +898,169 @@ end CenterDomination
 #print axioms CenterDomination.odd_total_dom_cover
 #print axioms CenterDomination.mean_center_le_pred_of_odd_total_dom
 #print axioms CenterDomination.claim269_partial
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- The actual finite vertex set of the center. -/
+noncomputable def centerVertices [Fintype V] (G : SimpleGraph V) : Finset V := by
+  classical
+  exact Finset.univ.filter (Central G)
+
+abbrev CenterType [Fintype V] (G : SimpleGraph V) :=
+  (↑(centerVertices G) : Set V)
+
+abbrev centerGraph [Fintype V] (G : SimpleGraph V) :=
+  G.induce (↑(centerVertices G) : Set V)
+
+noncomputable def centerEdgeCount [Fintype V] (G : SimpleGraph V) : ℕ :=
+  Nat.card (centerGraph G).edgeSet
+
+noncomputable def centerRelPairs [Fintype V] (G : SimpleGraph V)
+    (P : V → V → Prop) : Finset (V × V) := by
+  classical
+  exact Finset.univ.filter fun p => Central G p.1 ∧ Central G p.2 ∧ P p.1 p.2
+
+noncomputable def innerRelPairs [Fintype V] (G : SimpleGraph V)
+    (P : V → V → Prop) : Finset (CenterType G × CenterType G) := by
+  classical
+  exact Finset.univ.filter fun p => P p.1.val p.2.val
+
+private theorem mem_centerVertices [Fintype V] (G : SimpleGraph V) (x : V) :
+    x ∈ centerVertices G ↔ Central G x := by
+  classical
+  simp [centerVertices]
+
+/-- Removing the subtype proofs is a bijection on actual ordered pairs. -/
+theorem center_rel_pair_card [Fintype V] (G : SimpleGraph V) (P : V → V → Prop) :
+    (centerRelPairs G P).card = (innerRelPairs G P).card := by
+  classical
+  have mem (p : V × V) (hp : p ∈ centerRelPairs G P) :
+      Central G p.1 ∧ Central G p.2 ∧ P p.1 p.2 := by
+    simpa [centerRelPairs] using hp
+  refine Finset.card_bij'
+    (fun p hp => (⟨p.1, (mem_centerVertices G _).2 (mem p hp).1⟩,
+      ⟨p.2, (mem_centerVertices G _).2 (mem p hp).2.1⟩))
+    (fun p _ => (p.1.val, p.2.val)) ?_ ?_ ?_ ?_
+  · intro p hp
+    simpa [innerRelPairs] using (mem p hp).2.2
+  · intro p hp
+    have rel : P p.1.val p.2.val := by simpa [innerRelPairs] using hp
+    have c1 := (mem_centerVertices G p.1.val).1 p.1.property
+    have c2 := (mem_centerVertices G p.2.val).1 p.2.property
+    simp [centerRelPairs, c1, c2, rel]
+  · intro p hp
+    rfl
+  · intro p hp
+    exact Prod.ext (Subtype.ext rfl) (Subtype.ext rfl)
+
+/-- The number of ordered distinct center pairs is twice the binomial
+coefficient of the actual center size. -/
+theorem center_pairs_card_choose [Fintype V] (G : SimpleGraph V) :
+    (centerPairs G).card = 2 * (centerVertices G).card.choose 2 := by
+  classical
+  change (centerRelPairs G (· ≠ ·)).card = _
+  rw [center_rel_pair_card]
+  have eq : innerRelPairs G (· ≠ ·) =
+      Finset.univ.filter (fun p : CenterType G × CenterType G =>
+        (⊤ : SimpleGraph (CenterType G)).Adj p.1 p.2) := by
+    ext p
+    simp [innerRelPairs, SimpleGraph.top_adj, Subtype.ext_iff]
+  rw [eq, ← SimpleGraph.two_mul_card_edgeFinset]
+  rw [SimpleGraph.card_edgeFinset_top_eq_card_choose_two]
+  simp
+
+/-- The number of ordered adjacent center pairs is twice the actual edge
+count of the induced center graph. -/
+theorem center_adj_pairs_card [Fintype V] (G : SimpleGraph V) :
+    (centerRelPairs G G.Adj).card = 2 * centerEdgeCount G := by
+  classical
+  rw [center_rel_pair_card]
+  change (Finset.univ.filter (fun p : CenterType G × CenterType G =>
+    (centerGraph G).Adj p.1 p.2)).card = _
+  rw [← SimpleGraph.two_mul_card_edgeFinset]
+  unfold centerEdgeCount
+  rw [Nat.card_eq_fintype_card, SimpleGraph.edgeFinset_card]
+
+/-- A center with at least two vertices inherits a dominating edge and
+is connected as an actual induced graph. -/
+theorem center_graph_connected [Fintype V] {G : SimpleGraph V}
+    {u v : V} (h : DomEdge G u v) (hm : 2 ≤ (centerVertices G).card) :
+    (centerGraph G).Connected := by
+  classical
+  have hc : 1 < Fintype.card (CenterType G) := by simpa using hm
+  letI : Nontrivial (CenterType G) := Fintype.one_lt_card_iff_nontrivial.1 hc
+  obtain ⟨a, b, ne⟩ := exists_pair_ne (CenterType G)
+  have ca := (mem_centerVertices G _).1 a.property
+  have cb := (mem_centerVertices G _).1 b.property
+  have ab : a.val ≠ b.val := fun eq => ne (Subtype.ext eq)
+  obtain ⟨p, q, cp, cq, edge, dom⟩ := center_dominating_edge h ca cb ab
+  let p' : CenterType G := ⟨p, (mem_centerVertices G p).2 cp⟩
+  let q' : CenterType G := ⟨q, (mem_centerVertices G q).2 cq⟩
+  have de : DomEdge (centerGraph G) p' q' := by
+    refine ⟨edge, ?_⟩
+    intro x
+    exact dom x.val ((mem_centerVertices G _).1 x.property)
+  exact connected_of_domEdge de
+
+/-- Bounds on the actual number of unordered induced center edges. -/
+theorem center_edge_count_bounds [Fintype V] {G : SimpleGraph V}
+    {u v : V} (h : DomEdge G u v) (hm : 2 ≤ (centerVertices G).card) :
+    (centerVertices G).card - 1 ≤ centerEdgeCount G ∧
+      centerEdgeCount G ≤ (centerVertices G).card.choose 2 := by
+  classical
+  have connected := center_graph_connected h hm
+  have lower := connected.card_vert_le_card_edgeSet_add_one
+  have low : (centerVertices G).card ≤ centerEdgeCount G + 1 := by
+    simpa [Nat.card_eq_fintype_card, centerEdgeCount] using lower
+  refine ⟨by omega, ?_⟩
+  have up := SimpleGraph.card_edgeFinset_le_card_choose_two (G := centerGraph G)
+  simpa [centerEdgeCount, Nat.card_eq_fintype_card, SimpleGraph.edgeFinset_card] using up
+
+/-- The center's mean is exactly 2 minus the actual edge density, not an
+independently specified numerical proxy. -/
+theorem center_mean_edge_formula [Fintype V] {G : SimpleGraph V}
+    {u v : V} (h : DomEdge G u v) (hm : 2 ≤ (centerVertices G).card) :
+    meanCenter G = 2 - (centerEdgeCount G : ℚ) / ((centerVertices G).card.choose 2 : ℚ) := by
+  classical
+  have filt : (centerPairs G).filter (fun p => G.Adj p.1 p.2) = centerRelPairs G G.Adj := by
+    ext p
+    simp only [Finset.mem_filter, centerPairs, centerRelPairs, Finset.mem_univ, true_and]
+    constructor
+    · rintro ⟨⟨a, b, _⟩, e⟩
+      exact ⟨a, b, e⟩
+    · rintro ⟨a, b, e⟩
+      exact ⟨⟨a, b, e.ne⟩, e⟩
+  have adjSum :
+      (∑ p ∈ centerPairs G, (@ite ℕ (G.Adj p.1 p.2) (Classical.propDecidable _) 1 0))
+        = 2 * centerEdgeCount G := by
+    rw [← Finset.sum_filter, Finset.sum_const, nsmul_eq_mul, mul_one, filt]
+    exact center_adj_pairs_card G
+  have identity := center_distance_sum h
+  rw [adjSum, center_pairs_card_choose] at identity
+  have Mpos : (0 : ℚ) < ((centerVertices G).card.choose 2 : ℚ) := by
+    exact_mod_cast Nat.choose_pos hm
+  have ratIdentity :
+      (∑ p ∈ centerPairs G, (G.dist p.1 p.2 : ℚ)) + 2 * (centerEdgeCount G : ℚ) =
+        2 * (2 * ((centerVertices G).card.choose 2 : ℚ)) := by
+    exact_mod_cast identity
+  unfold meanCenter
+  rw [center_pairs_card_choose, Nat.cast_mul, Nat.cast_ofNat]
+  let M : ℚ := ((centerVertices G).card.choose 2 : ℚ)
+  let e : ℚ := centerEdgeCount G
+  have hM : M ≠ 0 := ne_of_gt Mpos
+  have h2 : (2 : ℚ) ≠ 0 := by decide
+  have sum_eq : (∑ p ∈ centerPairs G, (G.dist p.1 p.2 : ℚ)) =
+      2 * (2 * M) - 2 * e := eq_sub_of_add_eq ratIdentity
+  change (∑ p ∈ centerPairs G, (G.dist p.1 p.2 : ℚ)) / (2 * M) = 2 - e / M
+  rw [sum_eq, sub_div, mul_div_cancel_right₀ _ (mul_ne_zero h2 hM),
+    mul_div_mul_left _ _ h2]
+
+end CenterDomination
+#print axioms CenterDomination.center_rel_pair_card
+#print axioms CenterDomination.center_pairs_card_choose
+#print axioms CenterDomination.center_adj_pairs_card
+#print axioms CenterDomination.center_graph_connected
+#print axioms CenterDomination.center_edge_count_bounds
+#print axioms CenterDomination.center_mean_edge_formula
