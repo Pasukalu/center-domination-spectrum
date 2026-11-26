@@ -90,3 +90,151 @@ end CenterDomination
 #print axioms CenterDomination.Fan.spoke_distance
 #print axioms CenterDomination.Fan.hub_distance
 
+
+
+namespace CenterDomination
+namespace Fan
+variable {S : Type*} {H : SimpleGraph S}
+
+/-- The hub and all spokes form the actual finite center. -/
+theorem center_card [Fintype S] (a : S) :
+    (centerVertices (graph H)).card = Fintype.card S + 1 := by
+  classical
+  let F : Finset (Fan S) := Finset.univ.image Fan.spoke
+  have eq : centerVertices (graph H) = insert .hub F := by
+    ext x
+    simp only [centerVertices, Finset.mem_filter, Finset.mem_univ, true_and,
+      centers a, Finset.mem_insert, F, Finset.mem_image]
+    simp only [Finset.mem_univ, true_and]
+    exact or_congr Iff.rfl (exists_congr fun _ => eq_comm)
+  have notHub : (.hub : Fan S) ∉ F := by simp [F]
+  rw [eq, Finset.card_insert_of_notMem notHub]
+  simp [F, Finset.card_image_of_injective, Fan.spoke.inj]
+
+/-- Count the two orientations of each hub-spoke edge and each spoke edge
+in the actual ambient center, then divide the equality by two. -/
+theorem center_edge_card [Fintype S] (a : S) :
+    centerEdgeCount (graph H) = Fintype.card S + Nat.card H.edgeSet := by
+  classical
+  let A : Finset (S × S) := Finset.univ.filter (fun p => H.Adj p.1 p.2)
+  let L : Finset (Fan S × Fan S) := Finset.univ.image (fun s : S => (.hub, .spoke s))
+  let R : Finset (Fan S × Fan S) := Finset.univ.image (fun s : S => (.spoke s, .hub))
+  let E : Finset (Fan S × Fan S) := A.image (fun p => (.spoke p.1, .spoke p.2))
+  have eq : centerRelPairs (graph H) (graph H).Adj = L ∪ R ∪ E := by
+    ext p
+    obtain ⟨x,y⟩ := p
+    cases x <;> cases y <;>
+      simp [centerRelPairs, centers a, graph, rel, L, R, E, A]
+  have dLR : Disjoint L R := by
+    rw [Finset.disjoint_left]
+    intro p hp hq
+    obtain ⟨s, _, rfl⟩ := Finset.mem_image.1 hp
+    simpa [R] using hq
+  have dE : Disjoint (L ∪ R) E := by
+    rw [Finset.disjoint_left]
+    intro p hp hq
+    rcases Finset.mem_union.1 hp with hl | hr
+    · obtain ⟨s, _, rfl⟩ := Finset.mem_image.1 hl
+      simpa [E] using hq
+    · obtain ⟨s, _, rfl⟩ := Finset.mem_image.1 hr
+      simpa [E] using hq
+  have lc : L.card = Fintype.card S := by
+    unfold L
+    rw [Finset.card_image_of_injective _ (fun x y e => Fan.spoke.inj (congrArg Prod.snd e))]
+    simp
+  have rc : R.card = Fintype.card S := by
+    unfold R
+    rw [Finset.card_image_of_injective _ (fun x y e => Fan.spoke.inj (congrArg Prod.fst e))]
+    simp
+  have ec : E.card = A.card := by
+    unfold E
+    apply Finset.card_image_of_injective
+    intro x y e
+    exact Prod.ext (Fan.spoke.inj (congrArg Prod.fst e)) (Fan.spoke.inj (congrArg Prod.snd e))
+  have ac : A.card = 2 * Nat.card H.edgeSet := by
+    dsimp [A]
+    rw [← SimpleGraph.two_mul_card_edgeFinset, Nat.card_eq_fintype_card, SimpleGraph.edgeFinset_card]
+  have count := center_adj_pairs_card (graph H)
+  rw [eq, Finset.card_union_of_disjoint dE, Finset.card_union_of_disjoint dLR,
+    lc, rc, ec, ac] at count
+  omega
+
+/-- Exactly the two named vertices are outside the center. -/
+theorem ambient_card [Fintype S] (a : S) :
+    Fintype.card (Fan S) = (centerVertices (graph H)).card + 2 := by
+  classical
+  let F : Finset (Fan S) := Finset.univ.image Fan.spoke
+  have eq : (Finset.univ : Finset (Fan S)) = insert .hub (insert .shadow (insert .pendant F)) := by
+    ext x
+    cases x <;> simp [F]
+  have p : (.pendant : Fan S) ∉ F := by simp [F]
+  have q : (.shadow : Fan S) ∉ insert .pendant F := by simp [F]
+  have h : (.hub : Fan S) ∉ insert .shadow (insert .pendant F) := by simp [F]
+  have card := congrArg Finset.card eq
+  rw [Finset.card_insert_of_notMem h, Finset.card_insert_of_notMem q,
+    Finset.card_insert_of_notMem p] at card
+  have fc : F.card = Fintype.card S := by
+    simp [F, Finset.card_image_of_injective, Fan.spoke.inj]
+  rw [Finset.card_univ, fc] at card
+  rw [center_card a]
+  omega
+
+end Fan
+
+/-- Every admissible edge count is realized by a finite simple graph:
+choose an arbitrary subset of the complete graph's edge finset. -/
+theorem exists_graph_with_edge_count (n t : ℕ) (h : t ≤ n.choose 2) :
+    ∃ H : SimpleGraph (Fin n), Nat.card H.edgeSet = t := by
+  classical
+  let K : SimpleGraph (Fin n) := ⊤
+  have bound : t ≤ K.edgeFinset.card := by
+    simpa [K, SimpleGraph.card_edgeFinset_top_eq_card_choose_two] using h
+  obtain ⟨s, sub, card⟩ := Finset.exists_subset_card_eq bound
+  let H : SimpleGraph (Fin n) := SimpleGraph.fromEdgeSet (↑s : Set (Sym2 (Fin n)))
+  have edges : H.edgeFinset = s := by
+    ext e
+    rw [SimpleGraph.mem_edgeFinset]
+    change e ∈ (SimpleGraph.fromEdgeSet (↑s : Set (Sym2 (Fin n)))).edgeSet ↔ e ∈ s
+    rw [SimpleGraph.edgeSet_fromEdgeSet]
+    constructor
+    · intro he
+      exact he.1
+    · intro he
+      exact ⟨he, SimpleGraph.not_isDiag_of_mem_edgeFinset (sub he)⟩
+  refine ⟨H, ?_⟩
+  rw [Nat.card_eq_fintype_card, ← SimpleGraph.edgeFinset_card, edges, card]
+
+/-- Every integer in the predicted edge interval has a realization on
+exactly m+2 vertices, with a dominating edge and the actual rational mean. -/
+theorem spectrum_attainment (m j : ℕ) (hm : 2 ≤ m)
+    (lo : m - 1 ≤ j) (hi : j ≤ m.choose 2) :
+    ∃ G : SimpleGraph (Fan (Fin (m - 1))),
+      (∃ a b, DomEdge G a b) ∧ (centerVertices G).card = m ∧
+      Fintype.card (Fan (Fin (m - 1))) = m + 2 ∧
+      centerEdgeCount G = j ∧ meanCenter G = 2 - (j : ℚ) / (m.choose 2 : ℚ) := by
+  classical
+  have em : m - 1 + 1 = m := by omega
+  have choose : m.choose 2 = (m - 1) + (m - 1).choose 2 := by
+    conv_lhs => rw [← em]
+    rw [Nat.choose_succ_succ', Nat.choose_one_right]
+  obtain ⟨H, edges⟩ := exists_graph_with_edge_count (m - 1) (j - (m - 1)) (by omega)
+  let a : Fin (m - 1) := ⟨0, by omega⟩
+  let G := Fan.graph H
+  have de : DomEdge G .hub (.spoke a) := Fan.pair_dominates a
+  have cm : (centerVertices G).card = m := by
+    simpa [G, em] using Fan.center_card (H := H) a
+  have ce : centerEdgeCount G = j := by
+    have h := Fan.center_edge_card (H := H) a
+    rw [Fintype.card_fin, edges] at h
+    change centerEdgeCount G = j
+    omega
+  refine ⟨G, ⟨_, _, de⟩, cm, ?_, ce, ?_⟩
+  · simpa [G, cm] using Fan.ambient_card (H := H) a
+  · rw [center_mean_edge_formula de (by omega), cm, ce]
+
+end CenterDomination
+#print axioms CenterDomination.Fan.center_card
+#print axioms CenterDomination.Fan.center_edge_card
+#print axioms CenterDomination.Fan.ambient_card
+#print axioms CenterDomination.exists_graph_with_edge_count
+#print axioms CenterDomination.spectrum_attainment
