@@ -804,3 +804,56 @@ end CenterDomination
 #print axioms CenterDomination.marked_appendage_two_of_partition
 #print axioms CenterDomination.marked_appendage_four
 #print axioms CenterDomination.marked_minimum_classification
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- A proper center in the dominating-edge class leaves at least two
+vertices outside it, including the radius-one case. -/
+theorem proper_center_two_outside [Fintype V] {G : SimpleGraph V}
+    {u v p : V} (h : DomEdge G u v) (np : ¬ Central G p) :
+    2 ≤ (outside G).card := by
+  classical
+  have witness : ∃ q, ¬ Central G q ∧ p ≠ q := by
+    by_cases one : ∃ w, Covers G 1 w
+    · have nc : ¬ Covers G 1 p := by
+        intro cov
+        apply np
+        intro r hex
+        by_cases hr : 1 ≤ r
+        · exact covers_mono cov hr
+        · have rz : r = 0 := by omega
+          subst r
+          obtain ⟨w, hw⟩ := hex
+          intro y
+          exact (show w = p from hw p).symm.trans (show w = y from hw y)
+      have ex : ∃ q, p ≠ q ∧ ¬ G.Adj p q := by
+        by_contra hn
+        apply nc
+        intro q
+        apply within_one.2
+        by_cases e : p = q
+        · exact Or.inl e
+        · exact Or.inr (by
+            by_contra na
+            exact hn ⟨q, e, na⟩)
+      obtain ⟨q, ne, na⟩ := ex
+      refine ⟨q, ?_, ne⟩
+      intro cq
+      rcases within_one.1 (cq 1 one p) with e | e
+      · exact ne e.symm
+      · exact na e.symm
+    · obtain ⟨q, nq, far⟩ := far_partner (endpoints_cover_two h).1 one np
+      exact ⟨q, nq, fun e => far (Or.inl e)⟩
+  obtain ⟨q, nq, ne⟩ := witness
+  have sub : insert p ({q} : Finset V) ⊆ outside G := by
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+    rcases hx with rfl | rfl
+    · exact (outside_mem_iff G p).2 np
+    · exact (outside_mem_iff G q).2 nq
+  simpa [ne] using Finset.card_le_card sub
+
+end CenterDomination
+#print axioms CenterDomination.proper_center_two_outside
