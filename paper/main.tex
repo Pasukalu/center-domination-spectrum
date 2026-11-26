@@ -296,7 +296,8 @@ This classification concerns a specified dominating edge, not the
 classical unrestricted centralizing number. For the latter, the
 values zero, two, three and four can occur \cite{bms,behrens}.
 The marked classification is a candidate contribution, pending
-further priority review and formal verification.
+further bibliographic and expert review. The integrated marked minimum
+theorem has now passed the Lean verification described below.
 
 \section{The ceiling variant}
 \begin{cor}\label{cor:269}
@@ -323,6 +324,18 @@ The arguments and manuscript were generated with OpenAI Codex. The companion
 archive contains exact-arithmetic experiments, a second enumerator, source and
 priority notes, and the scope and execution status of the Lean artifacts.
 The experiments count labelled graphs and do not enter the proofs.
+The Lean development uses Lean 4.28.1 and the pinned Mathlib dependency.
+On the verified revision, GitHub Actions run 114 completed 1,187 build jobs,
+audited the dependencies of 84 named declarations, and replayed the import
+closure in a fresh kernel environment. In particular, the unconditional
+strict mean bound, the partial ceiling bound in its rational form, the
+marked minimum classification, the exact spectrum, its tree equality
+condition and the proper-center order bound are machine checked.
+The formal strict mean argument uses a parity-sensitive connected spine
+construction; the stronger component-sensitive bound in
+Lemma~\ref{lem:spine} is not separately formalized. The floor and ceiling
+translations are elementary consequences of the checked rational inequalities.
+Verification record: \url{https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45869576150}.
 A literature search located the older radius and center-realization results
 cited above. Priority for the precise distance spectrum and constrained
 realization and sharp appendage results remains open to bibliographic and
