@@ -857,3 +857,24 @@ theorem proper_center_two_outside [Fintype V] {G : SimpleGraph V}
 
 end CenterDomination
 #print axioms CenterDomination.proper_center_two_outside
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- The ambient order is at least m+2 whenever the center is proper
+and there is a dominating edge. Together with spectrum_attainment,
+this establishes order optimality for every spectral value. -/
+theorem proper_center_order_bound [Fintype V] {G : SimpleGraph V}
+    {u v p : V} (h : DomEdge G u v) (np : ¬ Central G p) :
+    (centerVertices G).card + 2 ≤ Fintype.card V := by
+  classical
+  have outside_bound := proper_center_two_outside h np
+  have sum : (centerVertices G).card + (outside G).card = Fintype.card V := by
+    unfold centerVertices outside
+    simpa only [Finset.card_univ] using
+      (Finset.card_filter_add_card_filter_not (s := (Finset.univ : Finset V)) (Central G))
+  omega
+
+end CenterDomination
+#print axioms CenterDomination.proper_center_order_bound
