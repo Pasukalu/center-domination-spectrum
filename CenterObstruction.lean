@@ -7,6 +7,33 @@ noncomputable def outside [Fintype W] (G : SimpleGraph W) : Finset W := by
   classical
   exact Finset.univ.filter (fun w => ¬ Central G w)
 
+/-- A proper center leaves at least two vertices outside it (Theorem 3.1). -/
+theorem two_outside_of_noncentral [Fintype W] (hc : G.Connected)
+    {x : W} (hx : ¬ Central G x) : 2 ≤ (outside G).card := by
+  classical
+  have hfail := hx
+  unfold Central at hfail
+  obtain ⟨r, hr⟩ := Classical.not_forall.mp hfail
+  have hex : ∃ w, Covers G r w := by
+    by_contra hnone
+    exact hr (fun h => False.elim (hnone h))
+  have hnoc : ¬ Covers G r x := fun h => hr (fun _ => h)
+  obtain ⟨y, hy⟩ := Classical.not_forall.mp hnoc
+  have hfar : ¬ G.dist x y ≤ r := fun hle => hy ((within_iff_dist hc r x y).2 hle)
+  have hne : x ≠ y := by
+    rintro rfl
+    exact hfar (by simp)
+  have hyn : ¬ Central G y := by
+    intro cy
+    have hle := (within_iff_dist hc r y x).1 (cy r hex x)
+    have hsymm : G.dist x y = G.dist y x := SimpleGraph.dist_comm
+    exact hfar (hsymm.le.trans hle)
+  have sub : ({x, y} : Finset W) ⊆ outside G := by
+    intro z hz
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hz
+    rcases hz with rfl | rfl <;> simp_all [outside]
+  simpa [hne] using Finset.card_le_card sub
+
 /-- A leaf of the graph induced on the center, with its unique neighbor named. -/
 def CenterLeaf (G : SimpleGraph W) (x u : W) : Prop :=
   Central G x ∧ Central G u ∧ G.Adj x u ∧
@@ -85,4 +112,5 @@ theorem Ext.four_outside {V : Type*} [Fintype V] {H : SimpleGraph V} {u v : V}
 end CenterDomination
 #print axioms CenterDomination.opposite_leaves_force_four
 #print axioms CenterDomination.Ext.four_outside
+#print axioms CenterDomination.two_outside_of_noncentral
 
