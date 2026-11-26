@@ -1,4 +1,5 @@
 import CenterDomination
+import Mathlib.Combinatorics.SimpleGraph.Acyclic
 
 namespace CenterDomination
 open Finset
@@ -521,3 +522,93 @@ theorem exists_bounded_spine [DecidableEq V] {G : SimpleGraph V}
 
 end CenterDomination
 #print axioms CenterDomination.exists_bounded_spine
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- The insertion certificate implies genuine connectivity of the induced
+graph on the finite spine, not just reachability in the ambient graph. -/
+theorem SpineBuilt.induced_connected [DecidableEq V] {G : SimpleGraph V}
+    {K : Finset V} (built : SpineBuilt G K) :
+    (G.induce (↑K : Set V)).Connected := by
+  induction built with
+  | single x =>
+    apply (SimpleGraph.connected_iff_exists_forall_reachable _).2
+    refine ⟨⟨x, by simp⟩, ?_⟩
+    intro w
+    have hw : w.val = x := by simpa using w.property
+    have e : w = (⟨x, by simp⟩ : (↑({x} : Finset V) : Set V)) :=
+      Subtype.ext hw
+    subst w
+    exact SimpleGraph.Reachable.rfl
+  | @grow K x y built hx edge ih =>
+    let f : (G.induce (↑K : Set V)) →g (G.induce (↑(insert y K) : Set V)) :=
+      { toFun := fun v => ⟨v.val, Finset.mem_insert_of_mem v.property⟩
+        map_rel' := fun e => e }
+    let root : (↑K : Set V) := ⟨x, hx⟩
+    apply (SimpleGraph.connected_iff_exists_forall_reachable _).2
+    refine ⟨f root, ?_⟩
+    intro w
+    by_cases old : w.val ∈ K
+    · let z : (↑K : Set V) := ⟨w.val, old⟩
+      have eq : f z = w := Subtype.ext rfl
+      rw [← eq]
+      exact (ih root z).map f
+    · have wy : w.val = y :=
+        (Finset.mem_insert.1 w.property).resolve_right old
+      have adj : (G.induce (↑(insert y K) : Set V)).Adj (f root) w := by
+        change G.Adj x w.val
+        rw [wy]
+        exact edge
+      exact adj.reachable
+
+/-- A tree on the spine has diameter at most its number of vertices
+minus one; the statement uses the actual Mathlib metric. -/
+theorem finite_tree_distance_bound {W : Type*} [Fintype W]
+    {T : SimpleGraph W} (tree : T.IsTree) (x y : W) :
+    T.dist x y + 1 ≤ Fintype.card W := by
+  obtain ⟨p, hp, hd⟩ := tree.isConnected.exists_path_of_dist x y
+  have bound := hp.length_lt
+  omega
+
+/-- A bounded spine has a genuine Mathlib spanning tree on its induced
+vertex type, with the claimed diameter bound at every pair of vertices. -/
+theorem exists_bounded_spine_tree [DecidableEq V] {G : SimpleGraph V}
+    (hc : G.Connected) (D : Finset V)
+    (dom : ∀ x, ∃ d ∈ D, G.Adj d x) :
+    ∃ (K : Finset V) (T : SimpleGraph (↑K : Set V)),
+      D ⊆ K ∧ T ≤ G.induce (↑K : Set V) ∧ T.IsTree ∧
+      K.card + 2 + D.card % 2 ≤ 2 * D.card ∧
+      ∀ x y, T.dist x y + 1 ≤ K.card := by
+  classical
+  obtain ⟨K, built, contain, count⟩ := exists_bounded_spine hc D dom
+  obtain ⟨T, le, tree⟩ := built.induced_connected.exists_isTree_le
+  refine ⟨K, T, contain, le, tree, count, ?_⟩
+  intro x y
+  have bound := finite_tree_distance_bound tree x y
+  simpa using bound
+
+/-- Every total dominating set in a connected graph has at least two
+vertices. The proof also handles the singleton graph without assumptions
+on the existence of a minimum total dominating set. -/
+theorem total_dom_card_ge_two [DecidableEq V] {G : SimpleGraph V}
+    (hc : G.Connected) (D : Finset V)
+    (dom : ∀ x, ∃ d ∈ D, G.Adj d x) : 2 ≤ D.card := by
+  obtain ⟨root, _⟩ := (SimpleGraph.connected_iff_exists_forall_reachable G).1 hc
+  obtain ⟨a, ha, _⟩ := dom root
+  obtain ⟨b, hb, ba⟩ := dom a
+  have subset : insert a ({b} : Finset V) ⊆ D := by
+    intro x hx
+    simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+    rcases hx with rfl | rfl
+    · exact ha
+    · exact hb
+  have le := Finset.card_le_card subset
+  simpa [ba.ne.symm] using le
+
+end CenterDomination
+#print axioms CenterDomination.SpineBuilt.induced_connected
+#print axioms CenterDomination.finite_tree_distance_bound
+#print axioms CenterDomination.exists_bounded_spine_tree
+#print axioms CenterDomination.total_dom_card_ge_two
