@@ -54,14 +54,19 @@ DeLaVi\~na's catalogue \cite{wall} asks whether
 $\lfloor1+\av\rfloor\le\gt$ (no.\ 268) and whether the ceiling suffices in
 graphs containing no 4-cycle (no.\ 269). The latter forbids a 4-cycle even if
 it has a chord. DeLaVi\~na, Liu, Pepper, Waller and West \cite{dlpww}
-already proved $\rad(G)\le\gt(G)$. Their proof uses a total-domination-preserving
-spanning tree, and the proof of their Theorem~5 uses adjacent central vertices
-of a bicentral spanning tree. We give a component-sensitive derivation and use
-the resulting strict inequality to address no.\ 268. Our extremal and
-realization questions concern the internal distances and edges of $C$.
+already proved $\rad(G)\le\gt(G)$ (their Theorem~3). Their Lemma~2
+preserves a minimum total dominating set in a spanning tree, and the proof
+of Lemma~3, equation~(5), bounds its diameter by $\gt(G)+2c-1$ for a
+minimum set with $c$ components. Their Theorem~5 also uses the adjacent
+centers of a bicentral tree. Thus the minimum-set diameter bound is prior
+work. We include a direct quotient-tree derivation for arbitrary total
+dominating sets and apply the geometric bounds to the strict central-mean
+inequality in no.\ 268. The marked-edge realization problem and exact
+central-mean spectrum are our principal candidate contributions; priority
+remains subject to further bibliographic and expert review.
 
 \section{A central edge in the equality case}
-\begin{lem}\label{lem:spine}
+\begin{lem}[Arbitrary-set version of the bound in \cite{dlpww}, Lemma~3]\label{lem:spine}
 Let $G$ be a connected graph, let $D$ be a total dominating set of size $k$, and let $c$ be the
 number of components of $G[D]$. Then $G$ has a spanning tree of diameter at
 most $k+2c-1$. In particular $2c\le k$.
