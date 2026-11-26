@@ -183,7 +183,7 @@ private theorem not_cover_one_witness {G : SimpleGraph V} {u : V}
   · exact Or.inl e
   · exact Or.inr (by
       by_contra na
-      exact h ⟨y, e.symm, na⟩)
+      exact h ⟨y, fun eq => e eq.symm, na⟩)
 
 /-- A center in a graph with a dominating edge and no simple four-cycle
 is a clique. This is the geometric part of the k = 2 ceiling result. -/
@@ -256,7 +256,7 @@ theorem mean_center_le_one_of_noFourCycle [Fintype V] {G : SimpleGraph V}
         simpa [centerPairs] using hp
       rw [SimpleGraph.dist_eq_one_iff_adj.2
         (center_clique_of_noFourCycle h free p.1 p.2 hp'.1 hp'.2.1 hp'.2.2)]
-      norm_num
+      simp
     rw [total]
     simp
 
