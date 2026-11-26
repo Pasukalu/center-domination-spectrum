@@ -6,7 +6,7 @@
 
 - Frozen [v0.9.0](https://github.com/Pasukalu/center-domination-spectrum/releases/tag/v0.9.0), commit `4f0709f68fa4a9a1e9e012a1135b29f438d12d1c`.
 - [Final packaging CI #133](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45873013098): 1,187 build jobs, 84 audited declaration dependencies, independent fresh kernel replay; all experiment and manuscript jobs succeeded.
-- Current Phase IV branch changes attribution and review documents; the checked-in PDF is the frozen v0.9.0 version until a new build is archived.
+- Current Phase IV branch changes attribution and review documents; the revised PDF was archived in `9c2c6c6bc37de2bf70017c5ccfffa362f9f3f292` after successful [archive run](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45878046555). Independent binary retrieval verified the 290,181-byte PDF SHA-256 `fcc2c0ca23ae49470013dfc8cc44aaa489970f7f11f6c9a1df3f534d01837ea2`. The frozen v0.9.0 release remains unchanged.
 - The five Lean files, toolchain, Mathlib manifest, verification script and regular CI workflow were compared with the frozen revision using their Git blob IDs; all nine match. No proofs were modified in this comparison.
 - Reproduce using README. The verified public declarations in the five modules number 6, 40, 11, 2 and 25 respectively (84 total). Axiom closure allowlist: propext, Classical.choice, Quot.sound.
 
@@ -42,4 +42,4 @@ For each of questions 1–8: verdict (correct / minor repair / major repair / co
 
 ## Limitations and next steps
 
-This packet does not certify novelty, peer review, or authorship. No reviewer identity is asserted. The Phase IV priority report and journal-policy review document the remaining literature-access and policy limitations. Human contribution records, expert review, final attribution, current PDF rebuild and final CI are required before a publication-ready version. Do not register a DOI or submit to a journal without authorization.
+This packet does not certify novelty, peer review, or authorship. No reviewer identity is asserted. The Phase IV priority report and journal-policy review document the remaining literature-access and policy limitations. Human contribution records, expert review, final attribution, final-head CI are required before a publication-ready version. Do not register a DOI or submit to a journal without authorization.
