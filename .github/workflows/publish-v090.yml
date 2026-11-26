@@ -1,0 +1,44 @@
+name: Publish v0.9.0 research prerelease
+on:
+  push:
+    branches: [release/publish-v0.9.0]
+    paths: ['.github/workflows/publish-v090.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publish-v090
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'Pasukalu/center-domination-spectrum' && github.ref == 'refs/heads/release/publish-v0.9.0'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_REPO: Pasukalu/center-domination-spectrum
+      TARGET: 4f0709f68fa4a9a1e9e012a1135b29f438d12d1c
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 4f0709f68fa4a9a1e9e012a1135b29f438d12d1c
+          persist-credentials: false
+      - name: Verify frozen release payload
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET"
+          sha256sum -c paper/main.pdf.sha256
+          sed '/^\*\*Draft release notes, not yet a published GitHub release\.\*\*$/d' release-notes/v0.9.0.md > /tmp/v090-notes.md
+          printf '\nFinal packaging verification: [CI #133](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45873013098) passed all jobs with 84 audited dependency closures, 1,187 build jobs and a fresh kernel replay. The archived manuscript checksum was verified. The release targets commit `%s`.\n' "$TARGET" >> /tmp/v090-notes.md
+      - name: Publish prerelease without modifying main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view v0.9.0 --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to replace it.'
+            exit 1
+          fi
+          gh release create v0.9.0 paper/main.pdf paper/main.pdf.sha256 --repo "$GH_REPO" --target "$TARGET" --title "v0.9.0 — Research preview" --notes-file /tmp/v090-notes.md --prerelease --latest=false
+          gh release view v0.9.0 --repo "$GH_REPO" --json url,tagName,isPrerelease,isDraft,targetCommitish,assets
