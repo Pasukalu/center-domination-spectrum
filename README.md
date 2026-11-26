@@ -2,7 +2,7 @@
 
 > **Phase III: mathematical verification milestone reached; research preview pending final packaging and review.** [CI #120](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45871760984) passed all three jobs, including 84 audited declaration dependencies and independent fresh kernel replay. This is a proof-verification result, not a guarantee of academic priority or publication readiness. See [independent audit](verification/phase2-independent-audit-2026-11-26.md) and [Phase III verification record](verification/phase3-preview.md).
 
-[Archived manuscript PDF](paper/main.pdf) · [SHA-256 manifest](paper/main.pdf.sha256) · [CI #120 manuscript build](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45871760984/artifacts/15141784638) (temporary ZIP) · [LaTeX source](paper/main.tex) · [Selection and priority audit](research/selection-and-priority.md) · [Proof review](verification/proof-review.md) · [Research checks](https://github.com/Pasukalu/center-domination-spectrum/actions/workflows/research.yml)
+[Frozen v0.9.0 manuscript PDF](https://github.com/Pasukalu/center-domination-spectrum/releases/download/v0.9.0/main.pdf) (the checked-in PDF also corresponds to this release; the Phase IV LaTeX attribution revision is not yet archived) · [SHA-256 manifest](paper/main.pdf.sha256) · [CI #120 manuscript build](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45871760984/artifacts/15141784638) (temporary ZIP) · [LaTeX source](paper/main.tex) · [Selection and priority audit](research/selection-and-priority.md) · [Proof review](verification/proof-review.md) · [Research checks](https://github.com/Pasukalu/center-domination-spectrum/actions/workflows/research.yml)
 
 Let *C* be the vertices of minimum eccentricity in a finite connected simple graph, and let `mean(C)` average their ambient distances over distinct unordered pairs. The manuscript uses zero for a singleton center. A dominating edge is an edge whose endpoints together supply a neighbor to every vertex.
 
@@ -16,6 +16,14 @@ Let *C* be the vertices of minimum eccentricity in a finite connected simple gra
 | Written on the Wall II, no. 269 | The ceiling inequality holds for odd total domination number and in the four-cycle-free case of total domination number two. Even values of at least four remain open here. |
 
 The catalogue search and follow-up priority audit cover eight sources. The 2007 radius bound and the classical unconstrained center extension are prior work. The exact spectrum, specified-edge realization and sharp four-vertex lower bound are candidates for originality. The manuscript is an AI-generated research preprint.
+
+## Phase IV review material
+
+- [Independent mathematical reviewer packet](verification/expert-review-packet.md): statement-to-Lean map, eight targeted review questions, response form, and verification scope.
+- [Priority review](verification/phase4-priority-review-2026-11-27.md): source attribution, related literature and unresolved novelty questions.
+- [Journal and AI policy review](research/journal-and-ai-policy-review.md): five candidate venues and required human contribution/accountability checks.
+
+These documents request independent review; no human review, authorship approval or publication submission is claimed.
 
 ## Formal coverage
 
