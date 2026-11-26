@@ -31,3 +31,7 @@ Search phrases included "average distance" + "central vertices" + "total dominat
 - Clarify the attribution of Lemma 2.1 in the next manuscript revision, including the precise 2007 minimum-set bound; do not change the frozen v0.9.0 tag.
 - Check publisher AI policies and authorship eligibility, have accountable human contributors approve the manuscript, and disclose actual AI assistance accurately.
 - Make no DOI registration or journal submission without user confirmation.
+
+## Primary-source visual verification, follow-up
+
+The original [2007 article PDF](https://www.uhd.edu/documents/academics/sciences/total-dom-2007.pdf) was opened and PDF pages 3–4 (one-based PDF indices, not journal pagination) were inspected visually. Page 3 states Theorem 3; page 4 gives Lemmas 2–3 and equation (5), explicitly bounding the preserving spanning tree's diameter by gamma_t + 2c − 1. The attribution correction is implemented in the draft manuscript, with no change to its mathematics. The search did not establish exhaustive priority. Related [uniform central-peripheral appendage research](https://ejgta.org/index.php/ejgta/article/view/776) concerns a different restriction (prescribed center and centered periphery), not necessarily preservation of a marked dominating edge. Full-text comparisons and specialist review remain necessary.
