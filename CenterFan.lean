@@ -105,11 +105,11 @@ theorem center_card [Fintype S] (a : S) :
     ext x
     simp only [centerVertices, Finset.mem_filter, Finset.mem_univ, true_and,
       centers a, Finset.mem_insert, F, Finset.mem_image]
-    simp only [Finset.mem_univ, true_and]
     exact or_congr Iff.rfl (exists_congr fun _ => eq_comm)
   have notHub : (.hub : Fan S) ∉ F := by simp [F]
   rw [eq, Finset.card_insert_of_notMem notHub]
-  simp [F, Finset.card_image_of_injective, Fan.spoke.inj]
+  unfold F
+  rw [Finset.card_image_of_injective _ (fun x y e => Fan.spoke.inj e), Finset.card_univ]
 
 /-- Count the two orientations of each hub-spoke edge and each spoke edge
 in the actual ambient center, then divide the equality by two. -/
@@ -123,8 +123,8 @@ theorem center_edge_card [Fintype S] (a : S) :
   have eq : centerRelPairs (graph H) (graph H).Adj = L ∪ R ∪ E := by
     ext p
     obtain ⟨x,y⟩ := p
-    cases x <;> cases y <;>
-      simp [centerRelPairs, centers a, graph, rel, L, R, E, A]
+    simp only [centerRelPairs, Finset.mem_filter, Finset.mem_univ, true_and, centers a]
+    cases x <;> cases y <;> simp [graph, rel, L, R, E, A]
   have dLR : Disjoint L R := by
     rw [Finset.disjoint_left]
     intro p hp hq
@@ -152,7 +152,7 @@ theorem center_edge_card [Fintype S] (a : S) :
     intro x y e
     exact Prod.ext (Fan.spoke.inj (congrArg Prod.fst e)) (Fan.spoke.inj (congrArg Prod.snd e))
   have ac : A.card = 2 * Nat.card H.edgeSet := by
-    dsimp [A]
+    change (Finset.univ.filter (fun (x, y) => H.Adj x y)).card = 2 * Nat.card H.edgeSet
     rw [← SimpleGraph.two_mul_card_edgeFinset, Nat.card_eq_fintype_card, SimpleGraph.edgeFinset_card]
   have count := center_adj_pairs_card (graph H)
   rw [eq, Finset.card_union_of_disjoint dE, Finset.card_union_of_disjoint dLR,
@@ -174,7 +174,8 @@ theorem ambient_card [Fintype S] (a : S) :
   rw [Finset.card_insert_of_notMem h, Finset.card_insert_of_notMem q,
     Finset.card_insert_of_notMem p] at card
   have fc : F.card = Fintype.card S := by
-    simp [F, Finset.card_image_of_injective, Fan.spoke.inj]
+    unfold F
+    rw [Finset.card_image_of_injective _ (fun x y e => Fan.spoke.inj e), Finset.card_univ]
   rw [Finset.card_univ, fc] at card
   rw [center_card a]
   omega
@@ -188,7 +189,9 @@ theorem exists_graph_with_edge_count (n t : ℕ) (h : t ≤ n.choose 2) :
   classical
   let K : SimpleGraph (Fin n) := ⊤
   have bound : t ≤ K.edgeFinset.card := by
-    simpa [K, SimpleGraph.card_edgeFinset_top_eq_card_choose_two] using h
+    change t ≤ (⊤ : SimpleGraph (Fin n)).edgeFinset.card
+    rw [SimpleGraph.card_edgeFinset_top_eq_card_choose_two, Fintype.card_fin]
+    exact h
   obtain ⟨s, sub, card⟩ := Finset.exists_subset_card_eq bound
   let H : SimpleGraph (Fin n) := SimpleGraph.fromEdgeSet (↑s : Set (Sym2 (Fin n)))
   have edges : H.edgeFinset = s := by
@@ -226,7 +229,7 @@ theorem spectrum_attainment (m j : ℕ) (hm : 2 ≤ m)
   have ce : centerEdgeCount G = j := by
     have h := Fan.center_edge_card (H := H) a
     rw [Fintype.card_fin, edges] at h
-    change centerEdgeCount G = j
+    change centerEdgeCount (Fan.graph H) = j
     omega
   refine ⟨G, ⟨_, _, de⟩, cm, ?_, ce, ?_⟩
   · simpa [G, cm] using Fan.ambient_card (H := H) a
