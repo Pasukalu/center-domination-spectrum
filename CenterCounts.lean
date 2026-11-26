@@ -263,3 +263,99 @@ theorem mean_center_le_one_of_noFourCycle [Fintype V] {G : SimpleGraph V}
 end CenterDomination
 #print axioms CenterDomination.center_clique_of_noFourCycle
 #print axioms CenterDomination.mean_center_le_one_of_noFourCycle
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- A covering ball gives a non-strict upper bound for the actual mean. -/
+theorem mean_center_le_of_cover [Fintype V] {G : SimpleGraph V}
+    (hc : G.Connected) {r : ℕ} (cover : ∃ w, Covers G r w) :
+    meanCenter G ≤ r := by
+  classical
+  by_cases he : (centerPairs G).card = 0
+  · have empty := Finset.card_eq_zero.mp he
+    simp [meanCenter, empty]
+  · have pos : (0 : ℚ) < (centerPairs G).card := by
+      exact_mod_cast Nat.pos_of_ne_zero he
+    unfold meanCenter
+    apply (div_le_iff₀ pos).2
+    have bound : (∑ p ∈ centerPairs G, (G.dist p.1 p.2 : ℚ)) ≤
+        ∑ _p ∈ centerPairs G, (r : ℚ) := by
+      apply Finset.sum_le_sum
+      intro p hp
+      have hp' : Central G p.1 ∧ Central G p.2 ∧ p.1 ≠ p.2 := by
+        simpa [centerPairs] using hp
+      have le := (within_iff_dist hc r p.1 p.2).1 ((hp'.1 r cover) p.2)
+      exact_mod_cast le
+    simpa [mul_comm] using bound
+
+/-- If no smaller ball covers the graph, every vertex with a radius-k
+cover is central. No assumption that k is the graph radius is hidden. -/
+theorem central_of_minimal_cover {G : SimpleGraph V} {k : ℕ} {x : V}
+    (cov : Covers G k x) (minimal : ¬ ∃ w, Covers G (k - 1) w) :
+    Central G x := by
+  intro r hex
+  by_cases ge : k ≤ r
+  · exact covers_mono cov ge
+  · obtain ⟨w, hw⟩ := hex
+    exact False.elim (minimal ⟨w, covers_mono hw (by omega)⟩)
+
+/-- Adjacent covering vertices suffice for the strict mean inequality.
+This is the equality-case argument of the spanning-tree proof. -/
+theorem strict_mean_of_adjacent_covers [Fintype V] {G : SimpleGraph V}
+    (hc : G.Connected) {k : ℕ} (hk : 2 ≤ k) {u v : V}
+    (edge : G.Adj u v) (cu : Covers G k u) (cv : Covers G k v) :
+    meanCenter G < k := by
+  classical
+  apply strict_mean_of_geometric_alternatives hc (by omega)
+  by_cases smaller : ∃ w, Covers G (k - 1) w
+  · exact Or.inl smaller
+  · refine Or.inr ⟨⟨u, cu⟩, u, v, central_of_minimal_cover cu smaller,
+      central_of_minimal_cover cv smaller, edge.ne, ?_⟩
+    rw [SimpleGraph.dist_eq_one_iff_adj.2 edge]
+    omega
+
+/-- A bounded walk in a spanning subgraph remains bounded in the original
+graph. The proof works with the recursive walk predicate directly. -/
+theorem within_of_edge_inclusion {T G : SimpleGraph V}
+    (inc : ∀ x y, T.Adj x y → G.Adj x y)
+    (n : ℕ) (x y : V) (hw : Within T n x y) : Within G n x y := by
+  induction n generalizing x y with
+  | zero => exact hw
+  | succ n ih =>
+    change (Within T n x y ∨ ∃ z, T.Adj x z ∧ Within T n z y) at hw
+    change (Within G n x y ∨ ∃ z, G.Adj x z ∧ Within G n z y)
+    rcases hw with h | ⟨z, e, h⟩
+    · exact Or.inl (ih x y h)
+    · exact Or.inr ⟨z, inc x z e, ih z y h⟩
+
+/-- The spanning-tree construction need only produce either a smaller
+covering ball or adjacent radius-k covering vertices in a spanning subgraph.
+This proves the entire transfer and equality-case step, not existence of T. -/
+theorem strict_mean_of_spanning_midpoints [Fintype V] {T G : SimpleGraph V}
+    (hc : G.Connected) (inc : ∀ x y, T.Adj x y → G.Adj x y)
+    {k : ℕ} (hk : 2 ≤ k)
+    (mid : (∃ w, Covers T (k - 1) w) ∨
+      ∃ u v, T.Adj u v ∧ Covers T k u ∧ Covers T k v) :
+    meanCenter G < k := by
+  rcases mid with ⟨w, cov⟩ | ⟨u, v, e, cu, cv⟩
+  · exact strict_mean_of_geometric_alternatives hc (by omega)
+      (Or.inl ⟨w, fun y => within_of_edge_inclusion inc _ _ _ (cov y)⟩)
+  · exact strict_mean_of_adjacent_covers hc hk (inc u v e)
+      (fun y => within_of_edge_inclusion inc _ _ _ (cu y))
+      (fun y => within_of_edge_inclusion inc _ _ _ (cv y))
+
+/-- Unconditional k=2 case of No. 268, for an actual dominating edge. -/
+theorem mean_center_lt_two_of_domEdge [Fintype V] {G : SimpleGraph V}
+    {u v : V} (h : DomEdge G u v) : meanCenter G < 2 :=
+  strict_mean_of_adjacent_covers (connected_of_domEdge h) (by decide) h.1
+    (endpoints_cover_two h).1 (endpoints_cover_two h).2
+
+end CenterDomination
+#print axioms CenterDomination.mean_center_le_of_cover
+#print axioms CenterDomination.central_of_minimal_cover
+#print axioms CenterDomination.strict_mean_of_adjacent_covers
+#print axioms CenterDomination.within_of_edge_inclusion
+#print axioms CenterDomination.strict_mean_of_spanning_midpoints
+#print axioms CenterDomination.mean_center_lt_two_of_domEdge
