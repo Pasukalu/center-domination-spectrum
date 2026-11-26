@@ -1,0 +1,45 @@
+name: Publish v0.9.1 review prerelease
+on:
+  push:
+    branches: [release/publish-v0.9.1]
+    paths: ['.github/workflows/publish-v091.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: publish-v091
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.repository == 'Pasukalu/center-domination-spectrum' && github.ref == 'refs/heads/release/publish-v0.9.1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_REPO: Pasukalu/center-domination-spectrum
+      TARGET: eb6cff4f33a206404a018b127387c5ca9fe0084b
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: eb6cff4f33a206404a018b127387c5ca9fe0084b
+          persist-credentials: false
+      - name: Verify frozen release payload
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$TARGET"
+          sha256sum -c paper/main.pdf.sha256
+          test "$(sha256sum paper/main.pdf | cut -d ' ' -f 1)" = fcc2c0ca23ae49470013dfc8cc44aaa489970f7f11f6c9a1df3f534d01837ea2
+          sed '/^Candidate release notes; publication pending final CI and merge\.$/d' release-notes/v0.9.1.md > /tmp/v091-notes.md
+          printf '\nFinal verification: [CI #155](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45878211836) passed all three jobs, including 84 audited axiom closures and fresh kernel replay. Release target: `%s`.\n' "$TARGET" >> /tmp/v091-notes.md
+      - name: Publish prerelease without modifying main
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if gh release view v0.9.1 --repo "$GH_REPO" >/dev/null 2>&1; then
+            echo 'Release already exists; refusing to replace it.'
+            exit 1
+          fi
+          gh release create v0.9.1 paper/main.pdf paper/main.pdf.sha256 --repo "$GH_REPO" --target "$TARGET" --title "v0.9.1 — Attribution and review preview" --notes-file /tmp/v091-notes.md --prerelease --latest=false
+          gh release view v0.9.1 --repo "$GH_REPO" --json url,tagName,isPrerelease,isDraft,targetCommitish,assets
