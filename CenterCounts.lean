@@ -143,3 +143,123 @@ end CenterDomination
 #print axioms CenterDomination.strict_mean_of_all_dist_lt
 #print axioms CenterDomination.strict_mean_of_geometric_alternatives
 #print axioms CenterDomination.claim268_of_geometric_input
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- Absence of a simple four-cycle. Adjacent vertices are distinct by
+looplessness, so the two diagonal inequalities suffice. Chords are allowed. -/
+def NoFourCycle (G : SimpleGraph V) : Prop :=
+  ∀ a b c d : V, G.Adj a b → G.Adj b c → G.Adj c d → G.Adj d a →
+    a ≠ c → b ≠ d → False
+
+private theorem exclusive_far {G : SimpleGraph V} {u v x y : V}
+    (h : DomEdge G u v) (free : NoFourCycle G)
+    (ux : G.Adj u x) (nvx : ¬ G.Adj v x) (xv : x ≠ v)
+    (vy : G.Adj v y) (nuy : ¬ G.Adj u y) (yu : y ≠ u) :
+    ¬ Short G x y := by
+  rintro (eq | e | ⟨w, xw, wy⟩)
+  · exact nuy (eq ▸ ux)
+  · exact free u x y v ux e vy.symm h.1.symm yu.symm xv
+  · have wv : w ≠ v := by
+      intro eq
+      exact nvx ((eq ▸ xw).symm)
+    have wu : w ≠ u := by
+      intro eq
+      exact nuy (eq ▸ wy)
+    rcases h.2 w with uw | vw
+    · exact free u w y v uw wy vy.symm h.1.symm yu.symm wv
+    · exact free v w x u vw xw.symm ux.symm h.1 xv.symm wu
+
+private theorem not_cover_one_witness {G : SimpleGraph V} {u : V}
+    (hn : ¬ Covers G 1 u) : ∃ y, y ≠ u ∧ ¬ G.Adj u y := by
+  classical
+  by_contra h
+  apply hn
+  intro y
+  apply within_one.2
+  by_cases e : u = y
+  · exact Or.inl e
+  · exact Or.inr (by
+      by_contra na
+      exact h ⟨y, e.symm, na⟩)
+
+/-- A center in a graph with a dominating edge and no simple four-cycle
+is a clique. This is the geometric part of the k = 2 ceiling result. -/
+theorem center_clique_of_noFourCycle {G : SimpleGraph V} {u v : V}
+    (h : DomEdge G u v) (free : NoFourCycle G) :
+    ∀ x y, Central G x → Central G y → x ≠ y → G.Adj x y := by
+  classical
+  by_cases one : ∃ w, Covers G 1 w
+  · intro x y cx _ ne
+    exact (within_one.1 ((cx 1 one) y)).resolve_left ne
+  · obtain ⟨s, sv, nvs⟩ := not_cover_one_witness
+      (fun cov : Covers G 1 v => one ⟨v, cov⟩)
+    obtain ⟨t, tu, nut⟩ := not_cover_one_witness
+      (fun cov : Covers G 1 u => one ⟨u, cov⟩)
+    have us := (h.2 s).resolve_right nvs
+    have vt := (h.2 t).resolve_left nut
+    have hu := (endpoints_cover_two h).1
+    have common (x : V) (cx : Central G x) (xu : x ≠ u) (xv : x ≠ v) :
+        G.Adj u x ∧ G.Adj v x := by
+      constructor
+      · by_contra nux
+        have vx := (h.2 x).resolve_left nux
+        have far := exclusive_far h free us nvs sv vx nux xu
+        exact far (short_symm (within_two.1 ((cx 2 ⟨u, hu⟩) s)))
+      · by_contra nvx
+        have ux := (h.2 x).resolve_right nvx
+        exact exclusive_far h free ux nvx xv vt nut tu
+          (within_two.1 ((cx 2 ⟨u, hu⟩) t))
+    intro x y cx cy ne
+    by_cases xu : x = u
+    · subst x
+      by_cases yv : y = v
+      · subst y
+        exact h.1
+      · exact (common y cy ne.symm yv).1
+    · by_cases xv : x = v
+      · subst x
+        by_cases yu : y = u
+        · subst y
+          exact h.1.symm
+        · exact (common y cy yu ne.symm).2
+      · have xc := common x cx xu xv
+        by_cases yu : y = u
+        · subst y
+          exact xc.1.symm
+        · by_cases yv : y = v
+          · subst y
+            exact xc.2.symm
+          · have yc := common y cy yu yv
+            exact (free u x v y xc.1 xc.2.symm yc.2 yc.1.symm h.1.ne ne).elim
+
+/-- The actual rational average is at most one, including an empty set of
+distinct center pairs. Thus the paper's ceiling inequality holds for k=2. -/
+theorem mean_center_le_one_of_noFourCycle [Fintype V] {G : SimpleGraph V}
+    {u v : V} (h : DomEdge G u v) (free : NoFourCycle G) :
+    meanCenter G ≤ 1 := by
+  classical
+  by_cases he : (centerPairs G).card = 0
+  · have empty := Finset.card_eq_zero.mp he
+    simp [meanCenter, empty]
+  · have pos : (0 : ℚ) < (centerPairs G).card := by
+      exact_mod_cast Nat.pos_of_ne_zero he
+    unfold meanCenter
+    apply (div_le_iff₀ pos).2
+    have total : (∑ p ∈ centerPairs G, (G.dist p.1 p.2 : ℚ)) =
+        ∑ _p ∈ centerPairs G, (1 : ℚ) := by
+      apply Finset.sum_congr rfl
+      intro p hp
+      have hp' : Central G p.1 ∧ Central G p.2 ∧ p.1 ≠ p.2 := by
+        simpa [centerPairs] using hp
+      rw [SimpleGraph.dist_eq_one_iff_adj.2
+        (center_clique_of_noFourCycle h free p.1 p.2 hp'.1 hp'.2.1 hp'.2.2)]
+      norm_num
+    rw [total]
+    simp
+
+end CenterDomination
+#print axioms CenterDomination.center_clique_of_noFourCycle
+#print axioms CenterDomination.mean_center_le_one_of_noFourCycle
