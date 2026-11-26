@@ -1,4 +1,16 @@
-# Distances between central vertices in graphs with small total domination number
+# Can AI discover new mathematics?
+
+[![Pasukalu AI Research Lab — research preview](docs/banner.svg)](https://github.com/Pasukalu/center-domination-spectrum/releases/tag/v0.9.1)
+
+[English](README.md) · [简体中文](README.zh-CN.md) · [Research preview v0.9.1](https://github.com/Pasukalu/center-domination-spectrum/releases/tag/v0.9.1) · [Reviewer packet](verification/expert-review-packet.md)
+
+**An open experiment in AI-assisted mathematical discovery, with reproducible Lean 4 checks.** We investigate two graph theory conjectures announced in 2007, establish the strict mean-center-distance bound corresponding to no. 268, and study exact spectra and constrained center realizations. No. 269 remains partially resolved. Originality remains under review; 84 audited declarations are not 84 original theorems.
+
+### Try the Graph Center Explorer
+
+The dependency-free [interactive site source](docs/) lets you generate exact spectrum examples or toggle edges in a custom graph, computing shortest paths, the center and the minimum total dominating set independently of Lean. To run it locally: `python -m http.server 8000 --directory docs` and open `http://localhost:8000`. Public GitHub Pages deployment requires enabling the Actions source under Settings → Pages. [Explorer tests](tests/explorer.test.mjs) run in CI; do not mistake a finite experiment for a proof.
+
+### Research paper: Distances between central vertices in graphs with small total domination number
 
 > **v0.9.0 published; Phase IV attribution revision and independent review preparation.** [CI #120](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45871760984) passed all three jobs, including 84 audited declaration dependencies and independent fresh kernel replay. This is a proof-verification result, not a guarantee of academic priority or publication readiness. See [independent audit](verification/phase2-independent-audit-2026-11-26.md) and [Phase III verification record](verification/phase3-preview.md).
 
