@@ -968,7 +968,9 @@ theorem center_pairs_card_choose [Fintype V] (G : SimpleGraph V) :
       Finset.univ.filter (fun p : CenterType G × CenterType G =>
         (⊤ : SimpleGraph (CenterType G)).Adj p.1 p.2) := by
     ext p
-    simp [innerRelPairs, SimpleGraph.top_adj, Subtype.ext_iff]
+    simp only [innerRelPairs, Finset.mem_filter, Finset.mem_univ, true_and,
+      SimpleGraph.top_adj]
+    exact not_congr ⟨fun e => Subtype.ext e, fun e => congrArg Subtype.val e⟩
   rw [eq, ← SimpleGraph.two_mul_card_edgeFinset]
   rw [SimpleGraph.card_edgeFinset_top_eq_card_choose_two]
   simp
