@@ -86,3 +86,148 @@ end CenterDomination
 #print axioms CenterDomination.opposite_leaves_force_four
 #print axioms CenterDomination.Ext.four_outside
 
+
+
+namespace CenterDomination
+
+/-- The marked partition criterion in the paper. Ordinary domination includes
+the vertex itself. A pair not joined by a walk of length at most two must
+lie on the same side. -/
+structure MarkedPartition {V : Type*} (H : SimpleGraph V) (u v : V)
+    (A : V → Prop) : Prop where
+  leftEndpoint : A u
+  rightEndpoint : ¬ A v
+  leftCover : ∀ x, ∃ y, A y ∧ (x = y ∨ H.Adj x y)
+  rightCover : ∀ x, ∃ y, (¬ A y) ∧ (x = y ∨ H.Adj x y)
+  sameSide : ∀ x y, ¬ Short H x y → (A x ↔ A y)
+
+inductive TwoExt (V : Type*) where
+  | old : V → TwoExt V
+  | left | right
+  deriving DecidableEq, Fintype
+
+namespace TwoExt
+variable {V : Type*} {H : SimpleGraph V} {u v : V} {A : V → Prop}
+
+def rel (H : SimpleGraph V) (A : V → Prop) : TwoExt V → TwoExt V → Prop
+  | .old x, .old y => H.Adj x y
+  | .old x, .left | .left, .old x => A x
+  | .old x, .right | .right, .old x => ¬ A x
+  | _, _ => False
+
+def extend (H : SimpleGraph V) (A : V → Prop) : SimpleGraph (TwoExt V) where
+  Adj := rel H A
+  symm := by
+    intro x y h
+    cases x <;> cases y <;> first | exact h | exact H.symm h
+  loopless := by
+    constructor
+    intro x
+    cases x <;> simp [rel]
+
+theorem keeps_edge (h : DomEdge H u v) (part : MarkedPartition H u v A) :
+    DomEdge (extend H A) (.old u) (.old v) := by
+  refine ⟨h.1, ?_⟩
+  intro z
+  cases z with
+  | old x => exact h.2 x
+  | left => exact Or.inl part.leftEndpoint
+  | right => exact Or.inr part.rightEndpoint
+
+theorem far : ¬ Short (extend H A) .left .right := by
+  rintro (h | h | ⟨z, hl, hr⟩)
+  · cases h
+  · exact h
+  · cases z <;> simp_all [extend, rel]
+
+theorem old_short (part : MarkedPartition H u v A) (x : V) (z : TwoExt V) :
+    Short (extend H A) (.old x) z := by
+  classical
+  cases z with
+  | old y =>
+    by_cases hs : Short H x y
+    · rcases hs with e | e | ⟨w, ex, ey⟩
+      · subst y
+        exact Or.inl rfl
+      · exact Or.inr (Or.inl e)
+      · exact Or.inr (Or.inr ⟨.old w, ex, ey⟩)
+    · have same := part.sameSide x y hs
+      by_cases hx : A x
+      · exact Or.inr (Or.inr ⟨.left, hx, same.mp hx⟩)
+      · exact Or.inr (Or.inr ⟨.right, hx, fun hy => hx (same.mpr hy)⟩)
+  | left =>
+    obtain ⟨y, hy, e | e⟩ := part.leftCover x
+    · subst y
+      exact Or.inr (Or.inl hy)
+    · exact Or.inr (Or.inr ⟨.old y, e, hy⟩)
+  | right =>
+    obtain ⟨y, hy, e | e⟩ := part.rightCover x
+    · subst y
+      exact Or.inr (Or.inl hy)
+    · exact Or.inr (Or.inr ⟨.old y, e, hy⟩)
+
+theorem exact_centers (part : MarkedPartition H u v A) (z : TwoExt V) :
+    Central (extend H A) z ↔ ∃ x, z = .old x := by
+  have oldCover (x : V) : Covers (extend H A) 2 (.old x) :=
+    fun w => within_two.2 (old_short part x w)
+  have noOne : ¬ ∃ w, Covers (extend H A) 1 w := by
+    rintro ⟨w, hw⟩
+    exact far (short_of_one hw .left .right)
+  constructor
+  · intro hc
+    have hz := hc 2 ⟨.old u, oldCover u⟩
+    cases z with
+    | old x => exact ⟨x, rfl⟩
+    | left => exact False.elim (far (within_two.1 (hz .right)))
+    | right => exact False.elim (far (short_symm (within_two.1 (hz .left))))
+  · rintro ⟨x, rfl⟩
+    exact central_of_two (oldCover x) noOne
+
+theorem two_outside [Fintype V] (part : MarkedPartition H u v A) :
+    (outside (extend H A)).card = 2 := by
+  classical
+  have eq : outside (extend H A) = ({TwoExt.left, TwoExt.right} : Finset (TwoExt V)) := by
+    ext z
+    cases z <;> simp [outside, exact_centers part]
+  rw [eq]
+  simp
+
+/-- Sufficiency of the partition criterion, including the entire induced
+center, the marked edge and the exact number of additional vertices. -/
+theorem realizes_two [Fintype V] (h : DomEdge H u v)
+    (part : MarkedPartition H u v A) :
+    Function.Injective (@old V) ∧
+    (∀ x y, (extend H A).Adj (.old x) (.old y) ↔ H.Adj x y) ∧
+    (∀ z, Central (extend H A) z ↔ ∃ x, z = .old x) ∧
+    DomEdge (extend H A) (.old u) (.old v) ∧
+    (outside (extend H A)).card = 2 := by
+  exact ⟨fun _ _ e => by cases e; rfl, fun _ _ => Iff.rfl,
+    exact_centers part, keeps_edge h part, two_outside part⟩
+
+end TwoExt
+
+/-- No three vertices can be pairwise at distance greater than two
+in a graph with a dominating edge. -/
+theorem no_three_pairwise_far {V : Type*} {G : SimpleGraph V} {u v p q z : V}
+    (h : DomEdge G u v) (hpq : ¬ Short G p q)
+    (hpz : ¬ Short G p z) (hqz : ¬ Short G q z) : False := by
+  rcases h.2 p with hp | hp <;>
+    rcases h.2 q with hq | hq <;>
+    rcases h.2 z with hz | hz
+  · exact hpq (Or.inr (Or.inr ⟨u, hp.symm, hq⟩))
+  · exact hpq (Or.inr (Or.inr ⟨u, hp.symm, hq⟩))
+  · exact hpz (Or.inr (Or.inr ⟨u, hp.symm, hz⟩))
+  · exact hqz (Or.inr (Or.inr ⟨v, hq.symm, hz⟩))
+  · exact hqz (Or.inr (Or.inr ⟨u, hq.symm, hz⟩))
+  · exact hpz (Or.inr (Or.inr ⟨v, hp.symm, hz⟩))
+  · exact hpq (Or.inr (Or.inr ⟨v, hp.symm, hq⟩))
+  · exact hpq (Or.inr (Or.inr ⟨v, hp.symm, hq⟩))
+
+end CenterDomination
+#print axioms CenterDomination.TwoExt.keeps_edge
+#print axioms CenterDomination.TwoExt.far
+#print axioms CenterDomination.TwoExt.old_short
+#print axioms CenterDomination.TwoExt.exact_centers
+#print axioms CenterDomination.TwoExt.two_outside
+#print axioms CenterDomination.TwoExt.realizes_two
+#print axioms CenterDomination.no_three_pairwise_far
