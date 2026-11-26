@@ -960,8 +960,10 @@ coefficient of the actual center size. -/
 theorem center_pairs_card_choose [Fintype V] (G : SimpleGraph V) :
     (centerPairs G).card = 2 * (centerVertices G).card.choose 2 := by
   classical
-  change (centerRelPairs G (· ≠ ·)).card = _
-  rw [center_rel_pair_card]
+  have pairs : centerPairs G = centerRelPairs G (· ≠ ·) := by
+    ext p
+    simp [centerPairs, centerRelPairs]
+  rw [pairs, center_rel_pair_card]
   have eq : innerRelPairs G (· ≠ ·) =
       Finset.univ.filter (fun p : CenterType G × CenterType G =>
         (⊤ : SimpleGraph (CenterType G)).Adj p.1 p.2) := by
