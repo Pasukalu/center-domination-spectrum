@@ -28,7 +28,7 @@ A Lean 4.28.1 web session accepted the five source files assembled into one inpu
 With Elan, Python 3.10 or newer, Node.js, and an internet connection for the pinned Mathlib cache, run these commands from the repository root.
 
 ```sh
-lake exe cache get Mathlib.Combinatorics.SimpleGraph.Metric Mathlib.Tactic.DeriveFintype Mathlib.Algebra.Order.Field.Rat Mathlib.Algebra.Order.BigOperators.Group.Finset
+lake exe cache get Mathlib.Combinatorics.SimpleGraph.Metric Mathlib.Combinatorics.SimpleGraph.Acyclic Mathlib.Tactic.DeriveFintype Mathlib.Algebra.Order.Field.Rat Mathlib.Algebra.Order.BigOperators.Group.Finset
 python3 scripts/verify_lean.py
 python3 experiments/enumerate_graphs.py --out reproduced.json
 python3 -c "import json; assert json.load(open('reproduced.json')) == json.load(open('experiments/results.json'))"
