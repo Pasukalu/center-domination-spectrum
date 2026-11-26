@@ -359,3 +359,165 @@ end CenterDomination
 #print axioms CenterDomination.within_of_edge_inclusion
 #print axioms CenterDomination.strict_mean_of_spanning_midpoints
 #print axioms CenterDomination.mean_center_lt_two_of_domEdge
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- A finite connected spine, certified by an insertion history. Repeated
+insertions are harmless. No connectivity or size assertion is assumed. -/
+inductive SpineBuilt (G : SimpleGraph V) [DecidableEq V] : Finset V → Prop
+  | single (x : V) : SpineBuilt G {x}
+  | grow {K : Finset V} {x y : V} :
+      SpineBuilt G K → x ∈ K → G.Adj x y → SpineBuilt G (insert y K)
+
+private theorem spine_card_insert_le [DecidableEq V] (K : Finset V) (x : V) :
+    (insert x K).card ≤ K.card + 1 := by
+  by_cases hx : x ∈ K
+  · simp [hx]
+  · simp [hx]
+
+private theorem spine_walk_cross {G : SimpleGraph V} {x y : V}
+    (w : G.Walk x y) (P : V → Prop) (hx : P x) (hy : ¬ P y) :
+    ∃ a b, P a ∧ ¬ P b ∧ G.Adj a b := by
+  classical
+  revert hx hy
+  induction w with
+  | nil =>
+    intro hx hy
+    exact (hy hx).elim
+  | @cons a b c e w ih =>
+    intro ha hc
+    by_cases hb : P b
+    · exact ih hb hc
+    · exact ⟨a, b, ha, hb, e⟩
+
+private theorem spine_insert_near [DecidableEq V] {G : SimpleGraph V}
+    {K : Finset V} {x : V} (built : SpineBuilt G K)
+    (near : x ∈ K ∨ ∃ y ∈ K, G.Adj y x) :
+    SpineBuilt G (insert x K) := by
+  rcases near with hx | ⟨y, hy, e⟩
+  · simpa [hx] using built
+  · exact SpineBuilt.grow built hy e
+
+/-- The connected dominating spine exists with the parity-sensitive bound.
+A processed set S is charged at most two vertices per member, minus two
+for the initial edge, and minus one more for odd cardinality. A one-member
+step adds at most one vertex; a two-member step adds at most four. -/
+theorem exists_bounded_spine [DecidableEq V] {G : SimpleGraph V}
+    (hc : G.Connected) (D : Finset V)
+    (dom : ∀ x, ∃ d ∈ D, G.Adj d x) :
+    ∃ K : Finset V, SpineBuilt G K ∧ D ⊆ K ∧
+      K.card + 2 + D.card % 2 ≤ 2 * D.card := by
+  classical
+  obtain ⟨root, _⟩ := (SimpleGraph.connected_iff_exists_forall_reachable G).1 hc
+  obtain ⟨a, ha, _⟩ := dom root
+  obtain ⟨b, hb, ba⟩ := dom a
+  let S0 : Finset V := insert a {b}
+  have S0card : S0.card = 2 := by simp [S0, ba.ne.symm]
+  have S0D : S0 ⊆ D := by
+    intro x hx
+    simp only [S0, Finset.mem_insert, Finset.mem_singleton] at hx
+    rcases hx with rfl | rfl
+    · exact ha
+    · exact hb
+  have S0built : SpineBuilt G S0 :=
+    SpineBuilt.grow (SpineBuilt.single b) (by simp) ba
+  have finish : ∀ fuel : ℕ, ∀ S K : Finset V,
+      D.card - S.card = fuel → S.Nonempty → S ⊆ D → S ⊆ K →
+      SpineBuilt G K → K.card + 2 + S.card % 2 ≤ 2 * S.card →
+      ∃ L : Finset V, SpineBuilt G L ∧ D ⊆ L ∧
+        L.card + 2 + D.card % 2 ≤ 2 * D.card := by
+    intro fuel
+    induction fuel using Nat.strong_induction_on with
+    | h fuel ih =>
+      intro S K hfuel hs hSD hSK built budget
+      by_cases all : D ⊆ S
+      · have eq : S.card = D.card :=
+          Nat.le_antisymm (Finset.card_le_card hSD) (Finset.card_le_card all)
+        exact ⟨K, built, fun _ hx => hSK (all hx), by simpa [eq] using budget⟩
+      · have remaining : ∃ x ∈ D, x ∉ S := by
+          by_contra hn
+          apply all
+          intro x hx
+          by_contra hnx
+          exact hn ⟨x, hx, hnx⟩
+        by_cases near : ∃ x ∈ D, x ∉ S ∧
+            (x ∈ K ∨ ∃ y ∈ K, G.Adj y x)
+        · obtain ⟨x, hx, nx, close⟩ := near
+          let S' := insert x S
+          let K' := insert x K
+          have cs : S'.card = S.card + 1 := by simp [S', nx]
+          have ck : K'.card ≤ K.card + 1 := spine_card_insert_le K x
+          have sd : S' ⊆ D := by
+            intro z hz
+            rcases Finset.mem_insert.1 hz with rfl | hz
+            · exact hx
+            · exact hSD hz
+          have sk : S' ⊆ K' := by
+            intro z hz
+            rcases Finset.mem_insert.1 hz with rfl | hz
+            · exact Finset.mem_insert_self _ _
+            · exact Finset.mem_insert_of_mem (hSK hz)
+          have le := Finset.card_le_card sd
+          exact ih (D.card - S'.card) (by omega) S' K' rfl
+            ⟨x, Finset.mem_insert_self _ _⟩ sd sk
+            (spine_insert_near built close) (by omega)
+        · obtain ⟨x0, hx0, nx0⟩ := remaining
+          obtain ⟨s0, hs0⟩ := hs
+          let P : V → Prop := fun x => ∃ s ∈ S, x = s ∨ G.Adj s x
+          have ps : P s0 := ⟨s0, hs0, Or.inl rfl⟩
+          have px : ¬ P x0 := by
+            rintro ⟨s, hs, e | e⟩
+            · exact nx0 (e.symm ▸ hs)
+            · exact near ⟨x0, hx0, nx0, Or.inr ⟨s, hSK hs, e⟩⟩
+          obtain ⟨walk⟩ := hc s0 x0
+          obtain ⟨y, z, py, nz, yz⟩ := spine_walk_cross walk P ps px
+          obtain ⟨x, hx, xz⟩ := dom z
+          have nx : x ∉ S := fun e => nz ⟨x, e, Or.inr xz⟩
+          obtain ⟨t, ht, tx⟩ := dom x
+          have nt : t ∉ S := fun e =>
+            near ⟨x, hx, nx, Or.inr ⟨t, hSK e, tx⟩⟩
+          have xt : x ≠ t := tx.ne.symm
+          let S' := insert t (insert x S)
+          let K' := insert t (insert x (insert z (insert y K)))
+          have cs : S'.card = S.card + 2 := by
+            simp [S', nx, nt, xt.symm] <;> omega
+          have ck : K'.card ≤ K.card + 4 := by
+            have h1 := spine_card_insert_le K y
+            have h2 := spine_card_insert_le (insert y K) z
+            have h3 := spine_card_insert_le (insert z (insert y K)) x
+            have h4 := spine_card_insert_le (insert x (insert z (insert y K))) t
+            dsimp [K']
+            omega
+          have sd : S' ⊆ D := by
+            intro w hw
+            rcases Finset.mem_insert.1 hw with rfl | hw
+            · exact ht
+            · rcases Finset.mem_insert.1 hw with rfl | hw
+              · exact hx
+              · exact hSD hw
+          have sk : S' ⊆ K' := by
+            intro w hw
+            rcases Finset.mem_insert.1 hw with rfl | hw
+            · exact Finset.mem_insert_self _ _
+            · rcases Finset.mem_insert.1 hw with rfl | hw
+              · exact Finset.mem_insert_of_mem (Finset.mem_insert_self _ _)
+              · exact Finset.mem_insert_of_mem (Finset.mem_insert_of_mem
+                  (Finset.mem_insert_of_mem (Finset.mem_insert_of_mem (hSK hw))))
+          have by' : SpineBuilt G (insert y K) := by
+            apply spine_insert_near built
+            obtain ⟨s, hs, e | e⟩ := py
+            · exact Or.inl (e.symm ▸ hSK hs)
+            · exact Or.inr ⟨s, hSK hs, e⟩
+          have bz := SpineBuilt.grow by' (Finset.mem_insert_self y K) yz
+          have bx := SpineBuilt.grow bz (Finset.mem_insert_self z (insert y K)) xz.symm
+          have bt := SpineBuilt.grow bx (Finset.mem_insert_self x (insert z (insert y K))) tx.symm
+          have le := Finset.card_le_card sd
+          exact ih (D.card - S'.card) (by omega) S' K' rfl
+            ⟨t, Finset.mem_insert_self _ _⟩ sd sk bt (by omega)
+  exact finish (D.card - S0.card) S0 S0 rfl
+    ⟨a, Finset.mem_insert_self _ _⟩ S0D (fun _ hx => hx) S0built (by omega)
+
+end CenterDomination
+#print axioms CenterDomination.exists_bounded_spine
