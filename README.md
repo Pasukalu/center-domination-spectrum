@@ -1,5 +1,7 @@
 # Distances between central vertices in graphs with small total domination number
 
+> **Phase II audit: not release-ready.** See [independent audit](verification/phase2-independent-audit-2026-11-26.md) for confirmed prior work, independent checks, and formalization limitations. The general spanning-tree argument and full spectrum/ceiling results are not yet fully machine-checked.
+
 [Read the manuscript](paper/main.pdf) · [LaTeX source](paper/main.tex) · [Selection and priority audit](research/selection-and-priority.md) · [Proof review](verification/proof-review.md) · [Research checks](https://github.com/Pasukalu/center-domination-spectrum/actions/workflows/research.yml)
 
 Let *C* be the vertices of minimum eccentricity in a finite connected simple graph, and let `mean(C)` average their ambient distances over distinct unordered pairs. The manuscript uses zero for a singleton center. A dominating edge is an edge whose endpoints together supply a neighbor to every vertex.
