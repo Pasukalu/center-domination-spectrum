@@ -1068,3 +1068,79 @@ end CenterDomination
 #print axioms CenterDomination.center_graph_connected
 #print axioms CenterDomination.center_edge_count_bounds
 #print axioms CenterDomination.center_mean_edge_formula
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- The exact rational simplification of the extremal edge density. -/
+theorem minimum_edge_density (m : ℕ) (hm : 2 ≤ m) :
+    ((m - 1 : ℕ) : ℚ) / (m.choose 2 : ℚ) = 2 / (m : ℚ) := by
+  have p : 0 < m.choose 2 := Nat.choose_pos hm
+  have Mpos : (0 : ℚ) < (m.choose 2 : ℚ) := by exact_mod_cast p
+  have mpos : (0 : ℚ) < (m : ℚ) := by exact_mod_cast (show 0 < m by omega)
+  apply (div_eq_div_iff (ne_of_gt Mpos) (ne_of_gt mpos)).2
+  have eq : (m - 1) * m = 2 * m.choose 2 := by
+    simpa [Nat.choose_one_right, mul_comm] using (Nat.choose_succ_right_eq m 1).symm
+  exact_mod_cast eq
+
+/-- The entire necessary side of the exact spectrum. -/
+theorem spectrum_necessity [Fintype V] {G : SimpleGraph V} {u v : V}
+    (h : DomEdge G u v) (hm : 2 ≤ (centerVertices G).card) :
+    ∃ j : ℕ, (centerVertices G).card - 1 ≤ j ∧
+      j ≤ (centerVertices G).card.choose 2 ∧
+      meanCenter G = 2 - (j : ℚ) / ((centerVertices G).card.choose 2 : ℚ) := by
+  obtain ⟨lo, hi⟩ := center_edge_count_bounds h hm
+  exact ⟨centerEdgeCount G, lo, hi, center_mean_edge_formula h hm⟩
+
+/-- The sharp upper bound, in the simplified form appearing in the paper. -/
+theorem spectrum_upper_bound [Fintype V] {G : SimpleGraph V} {u v : V}
+    (h : DomEdge G u v) (hm : 2 ≤ (centerVertices G).card) :
+    meanCenter G ≤ 2 - 2 / ((centerVertices G).card : ℚ) := by
+  have Mpos : (0 : ℚ) < ((centerVertices G).card.choose 2 : ℚ) := by
+    exact_mod_cast Nat.choose_pos hm
+  have lo : (((centerVertices G).card - 1 : ℕ) : ℚ) ≤ (centerEdgeCount G : ℚ) := by
+    exact_mod_cast (center_edge_count_bounds h hm).1
+  have divle := (div_le_div_iff_of_pos_right Mpos).2 lo
+  rw [center_mean_edge_formula h hm, ← minimum_edge_density _ hm]
+  exact sub_le_sub_left divle 2
+
+/-- Equality in the sharp upper bound is equivalent to the actual
+induced center graph being a tree, not just an abstract edge count. -/
+theorem spectrum_max_iff_tree [Fintype V] {G : SimpleGraph V} {u v : V}
+    (h : DomEdge G u v) (hm : 2 ≤ (centerVertices G).card) :
+    meanCenter G = 2 - 2 / ((centerVertices G).card : ℚ) ↔
+      (centerGraph G).IsTree := by
+  classical
+  have Mpos : (0 : ℚ) < ((centerVertices G).card.choose 2 : ℚ) := by
+    exact_mod_cast Nat.choose_pos hm
+  have conn := center_graph_connected h hm
+  have size : Nat.card (CenterType G) = (centerVertices G).card := by
+    simp [Nat.card_eq_fintype_card]
+  rw [center_mean_edge_formula h hm, ← minimum_edge_density _ hm,
+    SimpleGraph.isTree_iff_connected_and_card]
+  constructor
+  · intro eq
+    have deq := congrArg (fun x : ℚ => 2 - x) eq
+    have deq' : (centerEdgeCount G : ℚ) / ((centerVertices G).card.choose 2 : ℚ) =
+        (((centerVertices G).card - 1 : ℕ) : ℚ) / ((centerVertices G).card.choose 2 : ℚ) := by
+      simpa only [sub_sub_cancel] using deq
+    have rat : (centerEdgeCount G : ℚ) = (((centerVertices G).card - 1 : ℕ) : ℚ) := by
+      have eqMul := congrArg (fun x : ℚ => x * ((centerVertices G).card.choose 2 : ℚ)) deq'
+      simpa only [div_mul_cancel₀ _ (ne_of_gt Mpos)] using eqMul
+    have nat : centerEdgeCount G = (centerVertices G).card - 1 := by exact_mod_cast rat
+    refine ⟨conn, ?_⟩
+    rw [size]
+    change centerEdgeCount G + 1 = (centerVertices G).card
+    omega
+  · rintro ⟨_, eq⟩
+    rw [size] at eq
+    change centerEdgeCount G + 1 = (centerVertices G).card at eq
+    have nat : centerEdgeCount G = (centerVertices G).card - 1 := by omega
+    rw [nat]
+
+end CenterDomination
+#print axioms CenterDomination.minimum_edge_density
+#print axioms CenterDomination.spectrum_necessity
+#print axioms CenterDomination.spectrum_upper_bound
+#print axioms CenterDomination.spectrum_max_iff_tree
