@@ -850,9 +850,11 @@ theorem proper_center_two_outside [Fintype V] {G : SimpleGraph V}
   have sub : insert p ({q} : Finset V) ⊆ outside G := by
     intro x hx
     simp only [Finset.mem_insert, Finset.mem_singleton] at hx
-    rcases hx with rfl | rfl
-    · exact (outside_mem_iff G p).2 np
-    · exact (outside_mem_iff G q).2 nq
+    rcases hx with hp | hq
+    · rw [hp]
+      exact (outside_mem_iff G p).2 np
+    · rw [hq]
+      exact (outside_mem_iff G q).2 nq
   simpa [ne] using Finset.card_le_card sub
 
 end CenterDomination
