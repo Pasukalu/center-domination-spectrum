@@ -83,3 +83,63 @@ end CenterDomination
 #print axioms CenterDomination.center_distance_sum
 #print axioms CenterDomination.strict_mean_of_close_pair
 
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- Handles the singleton-center convention as well as nonempty pair sets. -/
+theorem strict_mean_of_all_dist_lt [Fintype V] {G : SimpleGraph V} {k : ℕ}
+    (hk : 0 < k) (h : ∀ p ∈ centerPairs G, G.dist p.1 p.2 < k) :
+    meanCenter G < k := by
+  classical
+  by_cases he : (centerPairs G).card = 0
+  · have empty := Finset.card_eq_zero.mp he
+    have hkq : (0 : ℚ) < (k : ℚ) := by exact_mod_cast hk
+    simpa [meanCenter, empty] using hkq
+  · obtain ⟨p, hp⟩ := Finset.card_pos.mp (Nat.pos_of_ne_zero he)
+    exact strict_mean_of_close_pair (fun z hz => (h z hz).le) ⟨p, hp, h p hp⟩
+
+/-- Metric reduction of the conjecture to the two alternatives supplied by
+the paper's spanning-tree argument. The spanning-tree construction is not
+an assumption-free consequence of this lemma. -/
+theorem strict_mean_of_geometric_alternatives [Fintype V]
+    {G : SimpleGraph V} {k : ℕ} (hc : G.Connected) (hk : 0 < k)
+    (h : (∃ w, Covers G (k - 1) w) ∨
+      ((∃ w, Covers G k w) ∧
+        ∃ x y, Central G x ∧ Central G y ∧ x ≠ y ∧ G.dist x y < k)) :
+    meanCenter G < k := by
+  classical
+  rcases h with small | ⟨cover, x, y, cx, cy, ne, close⟩
+  · apply strict_mean_of_all_dist_lt hk
+    intro p hp
+    have hp' : Central G p.1 ∧ Central G p.2 ∧ p.1 ≠ p.2 := by
+      simpa [centerPairs] using hp
+    have hb := (within_iff_dist hc (k - 1) p.1 p.2).1 ((hp'.1 (k - 1) small) p.2)
+    omega
+  · apply strict_mean_of_close_pair
+    · intro p hp
+      have hp' : Central G p.1 ∧ Central G p.2 ∧ p.1 ≠ p.2 := by
+        simpa [centerPairs] using hp
+      exact (within_iff_dist hc k p.1 p.2).1 ((hp'.1 k cover) p.2)
+    · exact ⟨(x, y), by simp [centerPairs, cx, cy, ne], close⟩
+
+/-- The remaining input is precisely the graph-geometric alternatives for
+an arbitrary total dominating set; this is an interface, not a proof of
+those alternatives. -/
+theorem claim268_of_geometric_input [Fintype V] {G : SimpleGraph V}
+    (geom : G.Connected → ∀ D : Finset V,
+      (∀ x, ∃ d ∈ D, G.Adj d x) →
+      0 < D.card ∧
+      ((∃ w, Covers G (D.card - 1) w) ∨
+        ((∃ w, Covers G D.card w) ∧
+          ∃ x y, Central G x ∧ Central G y ∧ x ≠ y ∧ G.dist x y < D.card))) :
+    Claim268 G := by
+  intro hc D hd
+  obtain ⟨hk, h⟩ := geom hc D hd
+  exact strict_mean_of_geometric_alternatives hc hk h
+
+end CenterDomination
+#print axioms CenterDomination.strict_mean_of_all_dist_lt
+#print axioms CenterDomination.strict_mean_of_geometric_alternatives
+#print axioms CenterDomination.claim268_of_geometric_input
