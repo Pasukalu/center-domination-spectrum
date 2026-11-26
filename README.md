@@ -12,7 +12,7 @@ Let *C* be the vertices of minimum eccentricity in a finite connected simple gra
 | Which means occur for exactly *m* central vertices and total domination number two? | For *m* ≥ 2, set *M* = binom(*m*, 2). The attainable values are 2 − *j*/*M* for every integer *j* from *m* − 1 through *M*. The sharp maximum is 2 − 2/*m*. Every value has a realization with only two noncentral vertices. |
 | Written on the Wall II, no. 269 | The ceiling inequality holds for odd total domination number and in the four-cycle-free case of total domination number two. Even values of at least four remain open here. |
 
-The catalogue search and follow-up priority audit cover eight sources. The 2007 radius bound and the classical unconstrained center extension are prior work. The exact spectrum, specified-edge realization and sharp four-vertex lower bound are candidates for originality. The manuscript is an AI-generated research preprint.
+The catalogue search and follow-up priority audit cover eight sources. The 2007 spanning-tree bound and the classical unconstrained center extension are prior work. The four-vertex lower bound also follows from a short marked-edge adaptation of Chen's leaf restriction and Behrens' identification argument. Priority for the exact spectrum and the specified-edge results remains unconfirmed. The manuscript is an AI-generated research preprint.
 
 ## Formal coverage
 

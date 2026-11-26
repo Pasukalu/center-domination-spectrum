@@ -107,6 +107,8 @@ comparisons are as follows.
 
 A second search after deriving the obstruction included “centralizing number”, “centralizer”, “central appendage”, “almost self-centered”, “double star”, “pendant neighbor”, “dominating edge” and “diameter three”. Behrens' Lemma 2.1.3 records prior peripheral-neighborhood restrictions, including one for a leaf. Her Lemma 2.1.4 addresses radius-two centralizers with three outside vertices. These results concern the unmarked optimization. [Behrens, institutional copy](https://digitalcommons.unl.edu/mathstudent/63/).
 
+Closer comparison gives an alternative proof of Theorem 3.3. With two extra vertices the center in this theorem has an ordinary minimum centralizer, so Chen's leaf-neighborhood restriction applies directly. With three extras Behrens' identification of two outside vertices can be performed while preserving the specified edge. Thus the marked lower bound is a short adaptation of earlier results. The literal priority of the marked statement remains undetermined. [Detailed deduction](../verification/proof-review.md#a-second-proof-of-the-lower-bound-using-earlier-work)
+
 The original articles and the catalogue outweigh search snippets. An exact
 match could still appear under terminology not indexed by the searches, in
 a dissertation or in an unpublished note. No human referee, journal decision,
