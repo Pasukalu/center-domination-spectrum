@@ -13,7 +13,9 @@ jobs:
           auto-config: "false"
           build: "false"
           test: "false"
-          use-mathlib-cache: "true"
+          use-mathlib-cache: "false"
+          use-github-cache: "false"
+      - run: lake exe cache get Mathlib.Combinatorics.SimpleGraph.Metric Mathlib.Tactic.DeriveFintype Mathlib.Algebra.Order.Field.Rat Mathlib.Algebra.Order.BigOperators.Group.Finset
       - run: python3 scripts/verify_lean.py
       - uses: actions/upload-artifact@v4
         if: always()
@@ -28,6 +30,7 @@ jobs:
       - run: python3 experiments/enumerate_graphs.py --out /tmp/center-results.json
       - run: diff -u experiments/results.json /tmp/center-results.json
       - run: python3 experiments/independent_check.py
+      - run: python3 experiments/check_appendages.py
   manuscript:
     runs-on: ubuntu-latest
     steps:

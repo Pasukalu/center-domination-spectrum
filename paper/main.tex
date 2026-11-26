@@ -26,7 +26,10 @@ When $\gt(G)=2$ and the center has $m\ge2$ vertices, we determine the full set
 of attainable means. Its largest member is $2-2/m$. Every value is realized
 on $m+2$ vertices, the smallest possible order for a realization with a proper
 center. We also characterize the induced center graphs in this class by a
-construction preserving a specified dominating edge.
+construction preserving a specified dominating edge. When both ends of
+that edge have pendant neighbors, four additional vertices are necessary
+and sufficient. This gives an infinite family for which preserving the
+edge increases the minimum from two to four.
 \end{abstract}
 
 \section{The question}
@@ -176,6 +179,42 @@ with at most four additional vertices \cite{bms}. The constraint here is
 preservation of a specified total dominating pair. The unconstrained
 appendage bound is classical.
 
+\begin{thm}\label{thm:obstruction}
+Let $H$ have a dominating edge $uv$ and let distinct leaves $x,y$, outside
+$\{u,v\}$, be attached to $u,v$, respectively. Among all realizations of
+$H$ as the induced center that preserve $uv$ as a dominating edge, the
+minimum number of additional vertices is four.
+\end{thm}
+\begin{proof}
+Consider any such realization $G$. Its radius is at most two. The center
+contains the nonadjacent vertices $x,y$, so its radius is two. Every
+noncentral vertex therefore has a vertex at distance greater than two,
+and that vertex is also noncentral. Since $x,y$ are central, they have a
+common neighbor $p$. It is noncentral, because their only neighbors in the
+center are the distinct vertices $u,v$. By interchanging the ends if
+necessary, suppose that $p$ is adjacent to $u$.
+
+Choose $q$ at distance greater than two from $p$. It is adjacent to
+neither $x$ nor $u$, both of which are adjacent to $p$. Since $x$ is
+central, it has a common neighbor $t$ with $q$. The vertex $t$ is
+noncentral, for $u$ is the only central neighbor of $x$ and misses $q$.
+Also $t\ne p$ since $p$ misses $q$. Finally choose $z$ at distance greater
+than two from $t$. The path $t,x,p$ and the edge $tq$ give $z\ne p,q$.
+Thus $p,q,t,z$ are four distinct noncentral vertices. The matching
+construction is Theorem~\ref{thm:real}.
+\end{proof}
+
+In particular let $H$ be a double star with at least one leaf on each end
+of its central edge. Its ordinary centralizing number is two, as also
+follows from the tree classification of Buckley, Miller and Slater
+\cite{bms,behrens}. To see this directly, add one vertex adjacent to all
+leaves and another adjacent to the two original internal vertices. These
+two new vertices are at distance three. Every old vertex has eccentricity
+two. At least two additions are necessary since $H$ is not self-centered
+and a diametrical pair is outside any proper center. Theorem~\ref{thm:obstruction}
+shows that requiring the original central edge to dominate increases the
+minimum from two to four throughout this infinite family.
+
 \section{The ceiling variant}
 \begin{cor}\label{cor:269}
 The ceiling inequality in no.\ 269 holds whenever $\gt$ is odd, or when
@@ -203,7 +242,8 @@ priority notes, and the scope and execution status of the Lean artifacts.
 The experiments count labelled graphs and do not enter the proofs.
 A literature search located the older radius and center-realization results
 cited above. Priority for the precise distance spectrum and constrained
-realization result remains open to bibliographic and expert review.
+realization and sharp appendage results remains open to bibliographic and
+expert review.
 \begin{thebibliography}{9}
 \bibitem{wall} E. DeLaVi\~na, \emph{Written on the Wall II: Conjectures of
 Graffiti.pc}, nos.\ 268--269, 23 February 2007. Catalogue updated 19 November
@@ -215,6 +255,10 @@ Numerantium} \textbf{185} (2007), 81--95.
 \bibitem{bms} F. Buckley, Z. Miller, and P. J. Slater, On graphs containing a
 given graph as center, \emph{Journal of Graph Theory} \textbf{5} (1981),
 427--434. \url{https://doi.org/10.1002/jgt.3190050413}.
+\bibitem{behrens} S. L. Behrens, \emph{Graph Centers, Hypergraph Degree
+Sequences, and Induced-saturation}, Ph.D. thesis, University of
+Nebraska--Lincoln, 2015, Chapter~2.
+\url{https://digitalcommons.unl.edu/mathstudent/63/}.
 \end{thebibliography}
 \end{document}
 

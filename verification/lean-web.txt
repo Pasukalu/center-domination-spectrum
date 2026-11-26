@@ -2,9 +2,9 @@ Lean 4 web editor • 26 November 2026
 Service: https://live.lean-lang.org/
 Selected toolchain display: Lean v4.28.1 with mathlib (project slug mathlib-v4.28.0).
 #eval Lean.versionString: "4.28.1"
-Assembled input SHA-256: 2b8ee0376a6443ec62f574a3c168f5a04371eab2fc4681da1eaabe3592db5de6
-Scope: four .lean modules concatenated in dependency order, internal import lines removed.
-Observed 17 informational messages (16 axiom lists and the version) with no error.
+Assembled input SHA-256: 667e9b2a642c8dcdb29405d18b47db0d01e9a01bbc202b9b71d9d56c4f9c48ad
+Scope: five .lean modules concatenated in dependency order, internal import lines removed.
+Observed 19 informational messages (18 axiom lists and the version) with no error.
 The list below transcribes the full dependency names displayed by #print axioms.
 
 CenterDomination.within_iff_walk                   [propext, Classical.choice, Quot.sound]
@@ -23,6 +23,8 @@ CenterDomination.Fan.spoke_distance                [propext, Classical.choice, Q
 CenterDomination.Fan.hub_distance                  [propext, Classical.choice, Quot.sound]
 CenterDomination.realization_iff                   [propext, Classical.choice, Quot.sound]
 CenterDomination.extension_radius_and_diameter     [propext, Quot.sound]
+CenterDomination.opposite_leaves_force_four        [propext, Classical.choice, Quot.sound]
+CenterDomination.Ext.four_outside                  [propext, Classical.choice, Quot.sound]
 
 The web editor checks a single input. For Lake compilation and a fresh replay of
 all imported declarations (including Mathlib), use scripts/verify_lean.py and

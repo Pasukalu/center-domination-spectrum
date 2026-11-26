@@ -1,6 +1,6 @@
 name = "centerDomination"
 version = "0.1.0"
-defaultTargets = ["CenterRealization"]
+defaultTargets = ["CenterObstruction"]
 
 [[require]]
 name = "mathlib"
@@ -18,4 +18,7 @@ name = "CenterFan"
 
 [[lean_lib]]
 name = "CenterRealization"
+
+[[lean_lib]]
+name = "CenterObstruction"
 

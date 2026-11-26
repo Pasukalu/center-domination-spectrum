@@ -1,9 +1,9 @@
-"""Assemble the four modules into the exact input checked by the Lean web editor."""
+"""Assemble the project into one input for the Lean web editor."""
 import argparse
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MODULES = ["CenterDomination", "CenterCounts", "CenterFan", "CenterRealization"]
+MODULES = ["CenterDomination", "CenterCounts", "CenterFan", "CenterRealization", "CenterObstruction"]
 
 
 def main():

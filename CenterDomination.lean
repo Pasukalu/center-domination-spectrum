@@ -1,5 +1,7 @@
 import Mathlib.Combinatorics.SimpleGraph.Metric
-import Mathlib.Tactic
+import Mathlib.Tactic.DeriveFintype
+import Mathlib.Algebra.Order.Field.Rat
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
 
 /-! Graph centers are defined through closed metric balls. The bridge to mathlib's
 shortest-path distance holds for arbitrary connected graphs. -/

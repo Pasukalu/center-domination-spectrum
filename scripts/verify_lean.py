@@ -7,7 +7,7 @@ import tempfile
 
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "verification"
-MODULES = ["CenterDomination", "CenterCounts", "CenterFan", "CenterRealization"]
+MODULES = ["CenterDomination", "CenterCounts", "CenterFan", "CenterRealization", "CenterObstruction"]
 ALLOWED = {"propext", "Classical.choice", "Quot.sound"}
 
 
@@ -36,7 +36,7 @@ def main():
     path = Path(temporary.name)
     try:
         with temporary:
-            text = "import CenterRealization\n" + "\n".join("#print axioms " + n for n in names)
+            text = "import CenterObstruction\n" + "\n".join("#print axioms " + n for n in names)
             temporary.write((text + "\n").encode("utf-8"))
         output = run(["lake", "env", "lean", str(path)], "axioms.log")
     finally:
@@ -49,7 +49,7 @@ def main():
     for name in names:
         if name not in seen or seen[name] - ALLOWED:
             raise ValueError(f"Missing declaration or disallowed axiom for {name}: {seen.get(name)}")
-    run(["lake", "env", "leanchecker", "--fresh", "CenterRealization"], "kernel.log")
+    run(["lake", "env", "leanchecker", "--fresh", "CenterObstruction"], "kernel.log")
     print(f"Checked {len(names)} axiom closures and replayed the module from a fresh environment.")
 
 
