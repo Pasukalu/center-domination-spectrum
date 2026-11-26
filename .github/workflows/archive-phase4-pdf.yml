@@ -36,7 +36,7 @@ jobs:
           test -s main.pdf
           pdftotext main.pdf /tmp/preview-manuscript.txt
           grep -F '84 named declarations' /tmp/preview-manuscript.txt
-          grep -F 'minimum-set diameter bound is prior' /tmp/preview-manuscript.txt
+          python3 -c "import pathlib; s=' '.join(pathlib.Path('/tmp/preview-manuscript.txt').read_text().split()); assert 'minimum-set diameter bound is prior' in s, 'attribution sentence missing'"
           pdfinfo main.pdf
           cd ..
           sha256sum paper/main.pdf > paper/main.pdf.sha256
