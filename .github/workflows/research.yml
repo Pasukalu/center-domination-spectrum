@@ -32,6 +32,7 @@ jobs:
       - run: python3 experiments/independent_check.py
       - run: python3 experiments/check_appendages.py
       - run: node experiments/check_marked_classification.js
+      - run: node experiments/check_spanning_spine.js
   manuscript:
     runs-on: ubuntu-latest
     steps:
