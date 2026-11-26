@@ -1,0 +1,220 @@
+\documentclass[11pt]{article}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,booktabs,array}
+\usepackage[hidelinks]{hyperref}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}[thm]{Corollary}
+\newcommand{\gt}{\gamma_{\mathrm t}}
+\newcommand{\rad}{\operatorname{rad}}
+\newcommand{\diam}{\operatorname{diam}}
+\newcommand{\ecc}{\operatorname{ecc}}
+\newcommand{\dist}{\operatorname{dist}}
+\newcommand{\av}{\overline d_C}
+\title{Distances between central vertices in graphs with small total domination number}
+\author{AI-generated research manuscript}
+\date{26 November 2026}
+\begin{document}
+\maketitle
+\begin{abstract}
+For a connected graph let $\av$ be the mean distance between distinct central
+vertices, with value zero for a singleton center. We prove
+$\av<\gt(G)$, the floor inequality posed in Graffiti.pc conjecture 268.
+When $\gt(G)=2$ and the center has $m\ge2$ vertices, we determine the full set
+of attainable means. Its largest member is $2-2/m$. Every value is realized
+on $m+2$ vertices, the smallest possible order for a realization with a proper
+center. We also characterize the induced center graphs in this class by a
+construction preserving a specified dominating edge.
+\end{abstract}
+
+\section{The question}
+All graphs are finite, simple and undirected. Distances between centers are
+taken in the ambient graph. Write $C=C(G)$ for the vertices of minimum
+eccentricity, $m=|C|$, and $M=\binom m2$.
+For $m\ge2$ put
+\[
+   \av(G)=\frac{1}{M}\sum_{\{x,y\}\subseteq C,\ x\ne y}d_G(x,y).
+\]
+For $m=1$ set $\av=0$. Averaging over ordered distinct pairs gives the same
+number. A total dominating set $D$ supplies a neighbor in $D$ to \emph{every}
+vertex, including the vertices of $D$. Write $\gt$ for its minimum size.
+In a connected graph this number is finite exactly when there are at least
+two vertices. Equivalently our strict inequality holds for every total
+dominating set of every nonempty connected graph. This formulation treats the
+one-vertex graph vacuously. With the extended-value convention it has
+$\gt(K_1)=+\infty$.
+
+DeLaVi\~na's catalogue \cite{wall} asks whether
+$\lfloor1+\av\rfloor\le\gt$ (no.\ 268) and whether the ceiling suffices in
+graphs containing no 4-cycle (no.\ 269). The latter forbids a 4-cycle even if
+it has a chord. DeLaVi\~na, Liu, Pepper, Waller and West \cite{dlpww}
+already proved $\rad(G)\le\gt(G)$. Their proof uses a total-domination-preserving
+spanning tree, and the proof of their Theorem~5 uses adjacent central vertices
+of a bicentral spanning tree. We give a component-sensitive derivation and use
+the resulting strict inequality to address no.\ 268. Our extremal and
+realization questions concern the internal distances and edges of $C$.
+
+\section{A central edge in the equality case}
+\begin{lem}\label{lem:spine}
+Let $D$ be a total dominating set of size $k$, and let $c$ be the
+number of components of $G[D]$. Then $G$ has a spanning tree of diameter at
+most $k+2c-1$. In particular $2c\le k$.
+\end{lem}
+\begin{proof}
+Every component of $G[D]$ has at least two vertices. Assign each vertex
+outside $D$ to a component containing one of its neighbors and assign each
+vertex of $D$ to its own component. Contract these parts. Each part is
+connected, so the quotient is connected. For every edge in a spanning tree
+of the quotient, choose one crossing edge $xy$ of $G$. Its ends lie either
+in their assigned components or next to them. Adding the ends of these
+$c-1$ edges to $D$ produces a connected dominating set $K$ with
+$|K|\le k+2(c-1)$. Take a tree on $K$ using edges of $G[K]$ and attach
+each remaining vertex as a leaf at one of its neighbors in $K$. A simple
+path in the resulting tree contains at most $|K|$ vertices of $K$ and at most
+two outside it. Its length is at most $|K|+1$.
+\end{proof}
+
+\begin{thm}\label{thm:268}
+Every connected graph admitting a total dominating set satisfies
+$\av(G)<\gt(G)$ and hence $\lfloor1+\av(G)\rfloor\le\gt(G)$.
+If $k=\gt(G)$ is odd, then $\av(G)\le k-1$.
+\end{thm}
+\begin{proof}
+For a minimum $D$ apply Lemma~\ref{lem:spine} to get a spanning tree $T$ of
+diameter at most $2k-1$, or at most $2k-2$ when $k$ is odd.
+The middle vertex or vertices of a longest tree path have eccentricity
+$\lceil\diam(T)/2\rceil$. Indeed, if a vertex branches off the path at
+position $i$ on a path of length $d$, its distance to the path is at most
+$\min(i,d-i)$ by maximality. This proves the asserted upper bound for a
+midpoint, and the two endpoints give the matching lower bound.
+Distances can only decrease on passage from $T$ to $G$. Consequently
+$r=\rad(G)\le k$, with $r\le k-1$ for odd $k$.
+
+Every distance averaged in $\av$ is at most $r$. It remains to consider
+$r=k$. Then $T$ must have diameter $2k-1$. Its two adjacent middle
+vertices $u,v$ both have eccentricity $k$ in $T$ and hence in $G$,
+as $k$ is already the minimum eccentricity in $G$. Thus $u,v\in C$.
+Their mutual distance $1$ is strictly less than $k$ since every total
+dominating set has at least two members. The finite average is strictly
+less than $k$. The singleton convention also gives the strict bound.
+Finally $\lfloor 1+a\rfloor\le k$ is equivalent to $a<k$ for integer $k$.
+\end{proof}
+
+\section{A complete spectrum for a dominating edge}
+A \emph{dominating edge} $uv$ has $N(u)\cup N(v)=V(G)$, using open
+neighborhoods. Its endpoints totally dominate the graph. Thus its existence
+is equivalent to $\gt=2$.
+
+\begin{thm}\label{thm:spectrum}
+Fix $m\ge2$. Among connected graphs with $\gt=2$ and exactly $m$ central
+vertices, the set of mean center distances is exactly
+\[
+  \left\{\,2-\frac{j}{M}\ \middle|\ j=m-1,m,\ldots,M\,\right\}.
+\]
+Its maximum is $2-2/m$. Equality at the maximum holds exactly when
+$G[C]$ is a tree. Each value is achieved by a graph with precisely two
+noncentral vertices. This is best possible among graphs with a proper center.
+\end{thm}
+\begin{proof}
+Let $uv$ be a dominating edge. Both endpoints have eccentricity at most
+two. If the radius is one, every central vertex is universal and $G[C]$
+is complete. If the radius is two, $u,v$ are central and give a dominating
+edge of $G[C]$. In both cases $G[C]$ is connected, so its edge count $e$
+is at least $m-1$. The distances of distinct centers are either one or two
+and exactly $e$ unordered pairs have distance one. Thus
+$M\av=e+2(M-e)=2M-e$. Equality at $e=m-1$ characterizes trees in a
+connected graph.
+
+For sharpness start with $K_{2,m-1}$, with part $\{u,q\}$ and other part
+$S$. Attach one pendant vertex $p$ to $u$. For any $t$ from zero through
+$\binom{m-1}{2}$ add any $t$ edges inside $S$. An edge from $u$ to any
+$s\in S$ dominates all vertices. The vertex $p$ is at distance three from
+$q$ since its unique neighbor $u$ misses $q$, and $p,u,s,q$ is a path.
+Every $s\in S$ is within distance two of every vertex, and is at distance
+two from $p$. The vertex $u$ has eccentricity two, witnessed by $q$.
+Therefore $C=\{u\}\cup S$, and $e=m-1+t$. This realizes every claimed
+integer $j$, including both endpoints; it also covers $m=2$.
+Finally a vertex of maximum eccentricity in a graph with a proper center
+has a farthest vertex. Both endpoints of this diametrical pair are
+noncentral, so at least two additional vertices are necessary.
+\end{proof}
+
+For example, a five-vertex center gives exactly $1,11/10,6/5,13/10,7/5,
+3/2,8/5$. The largest value comes from $K_{2,4}$ with a pendant vertex.
+As $m$ grows, the upper endpoint tends to two. Thus no positive constant
+can be subtracted uniformly from $\gt$ in Theorem~\ref{thm:268}.
+
+\begin{thm}\label{thm:real}
+A graph $H$ with at least two vertices is the induced center of a connected
+graph of total domination number two if and only if $H$ has a dominating
+edge. In the reverse direction any specified dominating edge of $H$ remains
+dominating in a realization with four additional vertices, radius two and
+diameter three.
+\end{thm}
+\begin{proof}
+Necessity follows from the first paragraph of Theorem~\ref{thm:spectrum}.
+For sufficiency let $uv$ be the specified edge. Preserve $H$ as an induced
+subgraph and add four vertices $P,Q,A,B$. Join $P$ to every old vertex
+except $v$, and $Q$ to every old vertex except $u$. Give $A$ exactly
+the two neighbors $v,Q$ and $B$ exactly the two neighbors $u,P$.
+These are all the additions.
+
+The edge $uv$ still dominates, so all graph distances are at most three.
+Any two old vertices other than the pair $u,v$ share $P$ or $Q$ if they
+are nonadjacent. Every old vertex lies within two of both $P$ and $Q$,
+using $uv$ for the two missing adjacencies. An old vertex other than
+$u,v$ sees $A$ through $Q$ and $B$ through $P$; the endpoints use $uv$
+where needed. No old vertex is universal, since each misses $A$ or $B$.
+All therefore have eccentricity two. The pair $P,A$ is nonadjacent and
+has no common neighbor, as is the pair $Q,B$. These four vertices have
+eccentricity three. This proves the assertion, including its order bound.
+\end{proof}
+Buckley, Miller and Slater proved that every graph has a center realization
+with at most four additional vertices \cite{bms}. The constraint here is
+preservation of a specified total dominating pair. The unconstrained
+appendage bound is classical.
+
+\section{The ceiling variant}
+\begin{cor}\label{cor:269}
+The ceiling inequality in no.\ 269 holds whenever $\gt$ is odd, or when
+$\gt=2$ and the graph has no 4-cycle.
+\end{cor}
+\begin{proof}
+The odd case follows from Theorem~\ref{thm:268}. In the second case choose a
+dominating edge $uv$. If there is a universal vertex then $C$ is a clique.
+Otherwise let $U,V$ consist of the vertices adjacent exclusively to $u,v$,
+respectively, other than the endpoints. Both $U,V$ are nonempty.
+There is at most one common neighbor of $u,v$. An edge from $U$ to $V$
+gives a 4-cycle through $uv$, and an edge from the common neighbor to
+either exclusive side also gives a 4-cycle. Thus every $U$--$V$ distance
+is three: there is neither an edge nor a common neighbor between such
+vertices. The only central vertices are $u,v$ and their common neighbor
+if present, each within two of everyone. They form a clique. In all cases
+$\av\le1$, giving the assertion.
+\end{proof}
+The even case $\gt\ge4$ of no.\ 269 is not settled here.
+
+\section*{Research record}
+The arguments and manuscript were generated with OpenAI Codex. The companion
+archive contains exact-arithmetic experiments, a second enumerator, source and
+priority notes, and the scope and execution status of the Lean artifacts.
+The experiments count labelled graphs and do not enter the proofs.
+A literature search located the older radius and center-realization results
+cited above. Priority for the precise distance spectrum and constrained
+realization result remains open to bibliographic and expert review.
+\begin{thebibliography}{9}
+\bibitem{wall} E. DeLaVi\~na, \emph{Written on the Wall II: Conjectures of
+Graffiti.pc}, nos.\ 268--269, 23 February 2007. Catalogue updated 19 November
+2026. \url{https://www.uhd.edu/academics/sciences/mathematics-statistics/wowii/index.html}.
+\bibitem{dlpww} E. DeLaVi\~na, Q. Liu, R. Pepper, B. Waller, and D. B. West,
+Some conjectures of Graffiti.pc on total domination, \emph{Congressus
+Numerantium} \textbf{185} (2007), 81--95.
+\url{https://www.uhd.edu/documents/academics/sciences/total-dom-2007.pdf}.
+\bibitem{bms} F. Buckley, Z. Miller, and P. J. Slater, On graphs containing a
+given graph as center, \emph{Journal of Graph Theory} \textbf{5} (1981),
+427--434. \url{https://doi.org/10.1002/jgt.3190050413}.
+\end{thebibliography}
+\end{document}
+

@@ -1,0 +1,21 @@
+name = "centerDomination"
+version = "0.1.0"
+defaultTargets = ["CenterRealization"]
+
+[[require]]
+name = "mathlib"
+git = "https://github.com/leanprover-community/mathlib4"
+rev = "v4.28.1"
+
+[[lean_lib]]
+name = "CenterDomination"
+
+[[lean_lib]]
+name = "CenterCounts"
+
+[[lean_lib]]
+name = "CenterFan"
+
+[[lean_lib]]
+name = "CenterRealization"
+

@@ -1,0 +1,10 @@
+.lake/
+__pycache__/
+*.pyc
+paper/*.aux
+paper/*.log
+paper/*.out
+verification/build.log
+verification/axioms.log
+verification/kernel.log
+

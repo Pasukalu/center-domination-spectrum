@@ -1,0 +1,44 @@
+name: Research checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  formalization:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: leanprover/lean-action@ba3fdfe5c4476c925da13bf11a005ddb47e47aee
+        with:
+          auto-config: "false"
+          build: "false"
+          test: "false"
+          use-mathlib-cache: "true"
+      - run: python3 scripts/verify_lean.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: lean-diagnostics
+          path: verification/*.log
+          if-no-files-found: ignore
+  experiments:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 experiments/enumerate_graphs.py --out /tmp/center-results.json
+      - run: diff -u experiments/results.json /tmp/center-results.json
+      - run: python3 experiments/independent_check.py
+  manuscript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended lmodern
+      - working-directory: paper
+        run: |
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex
+          pdflatex -interaction=nonstopmode -halt-on-error main.tex
+      - uses: actions/upload-artifact@v4
+        with:
+          name: manuscript-pdf
+          path: paper/main.pdf
+

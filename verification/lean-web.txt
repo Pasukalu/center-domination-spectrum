@@ -1,0 +1,30 @@
+Lean 4 web editor • 26 November 2026
+Service: https://live.lean-lang.org/
+Selected toolchain display: Lean v4.28.1 with mathlib (project slug mathlib-v4.28.0).
+#eval Lean.versionString: "4.28.1"
+Assembled input SHA-256: 2b8ee0376a6443ec62f574a3c168f5a04371eab2fc4681da1eaabe3592db5de6
+Scope: four .lean modules concatenated in dependency order, internal import lines removed.
+Observed 17 informational messages (16 axiom lists and the version) with no error.
+The list below transcribes the full dependency names displayed by #print axioms.
+
+CenterDomination.within_iff_walk                   [propext, Classical.choice, Quot.sound]
+CenterDomination.within_iff_dist                   [propext, Classical.choice, Quot.sound]
+CenterDomination.central_iff_metric                [propext, Classical.choice, Quot.sound]
+CenterDomination.center_dominating_edge            [propext, Classical.choice, Quot.sound]
+CenterDomination.Ext.exact_centers                 [propext, Classical.choice, Quot.sound]
+CenterDomination.Ext.realizes_center               [propext, Classical.choice, Quot.sound]
+CenterDomination.connected_of_domEdge              [propext, Classical.choice, Quot.sound]
+CenterDomination.center_distance_one_or_two        [propext, Classical.choice, Quot.sound]
+CenterDomination.center_distance_sum               [propext, Classical.choice, Quot.sound]
+CenterDomination.strict_mean_of_close_pair         [propext, Classical.choice, Quot.sound]
+CenterDomination.Fan.pair_dominates                [propext]
+CenterDomination.Fan.centers                       [propext, Classical.choice, Quot.sound]
+CenterDomination.Fan.spoke_distance                [propext, Classical.choice, Quot.sound]
+CenterDomination.Fan.hub_distance                  [propext, Classical.choice, Quot.sound]
+CenterDomination.realization_iff                   [propext, Classical.choice, Quot.sound]
+CenterDomination.extension_radius_and_diameter     [propext, Quot.sound]
+
+The web editor checks a single input. For Lake compilation and a fresh replay of
+all imported declarations (including Mathlib), use scripts/verify_lean.py and
+the lean-diagnostics artifact of the Research checks workflow.
+
