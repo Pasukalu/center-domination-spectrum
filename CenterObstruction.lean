@@ -231,3 +231,81 @@ end CenterDomination
 #print axioms CenterDomination.TwoExt.two_outside
 #print axioms CenterDomination.TwoExt.realizes_two
 #print axioms CenterDomination.no_three_pairwise_far
+
+
+namespace CenterDomination
+
+/-- The partition criterion is necessary given two exhaustive outside labels,
+their far relation and the orientation of the marked endpoints.  The
+complement of the first outside neighborhood absorbs unassigned vertices. -/
+theorem marked_partition_of_two_labels {V W : Type*}
+    {H : SimpleGraph V} {G : SimpleGraph W} {u v : V}
+    {i : V → W} {p q : W}
+    (inj : Function.Injective i)
+    (edges : ∀ x y, G.Adj (i x) (i y) ↔ H.Adj x y)
+    (allLabels : ∀ z, (∃ y, z = i y) ∨ z = p ∨ z = q)
+    (hp : ∀ x, i x ≠ p) (hq : ∀ x, i x ≠ q)
+    (far : ¬ Short G p q)
+    (covers : ∀ x, Covers G 2 (i x))
+    (up : G.Adj (i u) p) (vq : G.Adj (i v) q) :
+    MarkedPartition H u v (fun x => G.Adj (i x) p) := by
+  have disjoint (x : V) (b : G.Adj (i x) q) : ¬ G.Adj (i x) p :=
+    fun a => far (Or.inr (Or.inr ⟨i x, a.symm, b⟩))
+  have npq : ¬ G.Adj p q := fun e => far (Or.inr (Or.inl e))
+  refine ⟨up, disjoint v vq, ?_, ?_, ?_⟩
+  · intro x
+    rcases within_two.1 (covers x p) with e | e | ⟨z, xz, zp⟩
+    · exact (hp x e).elim
+    · exact ⟨x, e, Or.inl rfl⟩
+    · rcases allLabels z with ⟨y, rfl⟩ | rfl | rfl
+      · exact ⟨y, zp, Or.inr ((edges x y).1 xz)⟩
+      · exact (zp.ne rfl).elim
+      · exact (npq zp.symm).elim
+  · intro x
+    rcases within_two.1 (covers x q) with e | e | ⟨z, xz, zq⟩
+    · exact (hq x e).elim
+    · exact ⟨x, disjoint x e, Or.inl rfl⟩
+    · rcases allLabels z with ⟨y, rfl⟩ | rfl | rfl
+      · exact ⟨y, disjoint y zq, Or.inr ((edges x y).1 xz)⟩
+      · exact (npq zq).elim
+      · exact (zq.ne rfl).elim
+  · intro x y hfar
+    rcases within_two.1 (covers x (i y)) with e | e | ⟨z, xz, zy⟩
+    · exact (hfar (Or.inl (inj e))).elim
+    · exact (hfar (Or.inr (Or.inl ((edges x y).1 e)))).elim
+    · rcases allLabels z with ⟨w, rfl⟩ | rfl | rfl
+      · exact (hfar (Or.inr (Or.inr ⟨w, (edges x w).1 xz, (edges w y).1 zy⟩))).elim
+      · exact ⟨fun _ => zy.symm, fun _ => xz⟩
+      · exact ⟨fun a => (disjoint x xz a).elim,
+          fun b => (disjoint y zy.symm b).elim⟩
+
+/-- Orient the two outside labels using the marked dominating edge. -/
+theorem marked_partition_exists_of_two_labels {V W : Type*}
+    {H : SimpleGraph V} {G : SimpleGraph W} {u v : V}
+    {i : V → W} {p q : W}
+    (inj : Function.Injective i)
+    (edges : ∀ x y, G.Adj (i x) (i y) ↔ H.Adj x y)
+    (allLabels : ∀ z, (∃ y, z = i y) ∨ z = p ∨ z = q)
+    (hp : ∀ x, i x ≠ p) (hq : ∀ x, i x ≠ q)
+    (far : ¬ Short G p q)
+    (covers : ∀ x, Covers G 2 (i x))
+    (mark : DomEdge G (i u) (i v)) :
+    ∃ A : V → Prop, MarkedPartition H u v A := by
+  rcases mark.2 p with up | vp
+  · rcases mark.2 q with uq | vq
+    · exact (far (Or.inr (Or.inr ⟨i u, up.symm, uq⟩))).elim
+    · exact ⟨_, marked_partition_of_two_labels inj edges allLabels hp hq far covers up vq⟩
+  · rcases mark.2 q with uq | vq
+    · have swapLabels : ∀ z, (∃ y, z = i y) ∨ z = q ∨ z = p := by
+        intro z
+        rcases allLabels z with h | h | h
+        · exact Or.inl h
+        · exact Or.inr (Or.inr h)
+        · exact Or.inr (Or.inl h)
+      have swapFar : ¬ Short G q p := fun h => far (short_symm h)
+      exact ⟨_, marked_partition_of_two_labels inj edges swapLabels hq hp swapFar covers uq vp⟩
+    · exact (far (Or.inr (Or.inr ⟨i v, vp.symm, vq⟩))).elim
+
+end CenterDomination
+#print axioms CenterDomination.marked_partition_of_two_labels
+#print axioms CenterDomination.marked_partition_exists_of_two_labels
