@@ -20,16 +20,17 @@
 \maketitle
 \begin{abstract}
 For a connected graph let $\av$ be the mean distance between distinct central
-vertices, with value zero for a singleton center. We prove
-$\av<\gt(G)$, the floor inequality posed in Graffiti.pc conjecture 268.
-When $\gt(G)=2$ and the center has $m\ge2$ vertices, we determine the full set
+vertices, with value zero for a singleton center. When the total domination
+number is two and the center has $m\ge2$ vertices, we determine the full set
 of attainable means. Its largest member is $2-2/m$. Every value is realized
 on $m+2$ vertices, the smallest possible order for a realization with a proper
 center. We also characterize the induced center graphs in this class by a
 construction preserving a specified dominating edge. When both ends of
 that edge have pendant neighbors, four additional vertices are necessary
 and sufficient. This gives an infinite family for which preserving the
-edge increases the minimum from two to four.
+edge increases the minimum from two to four. We also derive $\av<\gt(G)$,
+the floor inequality in Graffiti.pc conjecture 268, from the spanning-tree
+bound of DeLaVi\~na, Liu, Pepper, Waller and West.
 \end{abstract}
 
 \section{The question}
@@ -40,28 +41,28 @@ For $m\ge2$ put
 \[
    \av(G)=\frac{1}{M}\sum_{\{x,y\}\subseteq C,\ x\ne y}d_G(x,y).
 \]
-For $m=1$ set $\av=0$. Averaging over ordered distinct pairs gives the same
+For $m=1$ the catalogue's positive-distance average has no terms. We extend
+it by setting $\av=0$. Averaging over ordered distinct pairs gives the same
 number. A total dominating set $D$ supplies a neighbor in $D$ to \emph{every}
-vertex, including the vertices of $D$. Write $\gt$ for its minimum size.
-In a connected graph this number is finite exactly when there are at least
-two vertices. Equivalently our strict inequality holds for every total
-dominating set of every nonempty connected graph. This formulation treats the
-one-vertex graph vacuously. With the extended-value convention it has
-$\gt(K_1)=+\infty$.
+vertex, including the vertices of $D$. On a connected graph of order at least
+two, write $\gt$ for its minimum size. The equivalent assertion for every
+total dominating set is vacuous on $K_1$, which has no such set.
 
 DeLaVi\~na's catalogue \cite{wall} asks whether
 $\lfloor1+\av\rfloor\le\gt$ (no.\ 268) and whether the ceiling suffices in
 graphs containing no 4-cycle (no.\ 269). The latter forbids a 4-cycle even if
 it has a chord. DeLaVi\~na, Liu, Pepper, Waller and West \cite{dlpww}
-already proved $\rad(G)\le\gt(G)$. Their proof uses a total-domination-preserving
-spanning tree, and the proof of their Theorem~5 uses adjacent central vertices
-of a bicentral spanning tree. We give a component-sensitive derivation and use
-the resulting strict inequality to address no.\ 268. Our extremal and
-realization questions concern the internal distances and edges of $C$.
+proved $\rad(G)\le\gt(G)$ in their Theorem~3. Equation~(5) in the proof
+of their Lemma~3 bounds the diameter of a spanning tree by
+$\gt(G)+2c-1\le 2\gt(G)-1$ for a minimum total dominating set with $c$
+components. Their proof of Theorem~5 also identifies adjacent tree centers
+as graph centers in the equality case. Together these observations give
+no.\ 268 by averaging. We include a direct construction for an arbitrary
+total dominating set. Section~3 concerns the distances and edges inside $C$.
 
 \section{A central edge in the equality case}
 \begin{lem}\label{lem:spine}
-Let $D$ be a total dominating set of size $k$, and let $c$ be the
+Let $G$ be a connected graph, let $D$ be a total dominating set of size $k$, and let $c$ be the
 number of components of $G[D]$. Then $G$ has a spanning tree of diameter at
 most $k+2c-1$. In particular $2c\le k$.
 \end{lem}
@@ -95,13 +96,15 @@ midpoint, and the two endpoints give the matching lower bound.
 Distances can only decrease on passage from $T$ to $G$. Consequently
 $r=\rad(G)\le k$, with $r\le k-1$ for odd $k$.
 
-Every distance averaged in $\av$ is at most $r$. It remains to consider
-$r=k$. Then $T$ must have diameter $2k-1$. Its two adjacent middle
+If $r\le k-1$, each distance averaged in $\av$ is at most $k-1$.
+For a singleton center the mean is zero by convention. This also proves
+the odd case. If $r=k$, then $T$ must have diameter $2k-1$. Its two adjacent middle
 vertices $u,v$ both have eccentricity $k$ in $T$ and hence in $G$,
-as $k$ is already the minimum eccentricity in $G$. Thus $u,v\in C$.
+as $k$ is already the minimum eccentricity in $G$. Thus $u,v\in C$,
+and every center-to-center distance is at most $k$.
 Their mutual distance $1$ is strictly less than $k$ since every total
 dominating set has at least two members. The finite average is strictly
-less than $k$. The singleton convention also gives the strict bound.
+less than $k$.
 Finally $\lfloor 1+a\rfloor\le k$ is equivalent to $a<k$ for integer $k$.
 \end{proof}
 
@@ -145,7 +148,9 @@ noncentral, so at least two additional vertices are necessary.
 \end{proof}
 
 For example, a five-vertex center gives exactly $1,11/10,6/5,13/10,7/5,
-3/2,8/5$. The largest value comes from $K_{2,4}$ with a pendant vertex.
+3/2,8/5$. The largest value comes from $K_{2,4}$ by attaching a pendant
+vertex to either vertex in its part of size two. Attaching it in the part
+of size four instead gives three centers and mean $4/3$.
 As $m$ grows, the upper endpoint tends to two. Thus no positive constant
 can be subtracted uniformly from $\gt$ in Theorem~\ref{thm:268}.
 
@@ -176,8 +181,10 @@ eccentricity three. This proves the assertion, including its order bound.
 \end{proof}
 Buckley, Miller and Slater proved that every graph has a center realization
 with at most four additional vertices \cite{bms}. The constraint here is
-preservation of a specified total dominating pair. The unconstrained
-appendage bound is classical.
+preservation of a specified total dominating pair. Guest et al.\
+\cite{guest} also realize any prescribed center at radius two and diameter
+three, as a special case of their radius--diameter theorem. Their theorem
+allows the specified edge to lose its domination property in the extension.
 
 \begin{thm}\label{thm:obstruction}
 Let $H$ have a dominating edge $uv$ and let distinct leaves $x,y$, outside
@@ -236,14 +243,17 @@ $\av\le1$, giving the assertion.
 The even case $\gt\ge4$ of no.\ 269 is not settled here.
 
 \section*{Research record}
-The arguments and manuscript were generated with OpenAI Codex. The companion
-archive contains exact-arithmetic experiments, a second enumerator, source and
-priority notes, and the scope and execution status of the Lean artifacts.
-The experiments count labelled graphs and do not enter the proofs.
-A literature search located the older radius and center-realization results
-cited above. Priority for the precise distance spectrum and constrained
-realization and sharp appendage results remains open to bibliographic and
-expert review.
+The arguments and manuscript were generated with OpenAI Codex.
+The \href{https://github.com/Pasukalu/center-domination-spectrum}{public research repository}
+contains the Lean sources and exact-arithmetic experiments. Its
+\href{https://github.com/Pasukalu/center-domination-spectrum/blob/main/verification/proof-review.md}{theorem-by-theorem proof record}
+and \href{https://github.com/Pasukalu/center-domination-spectrum/actions/workflows/research.yml}{build and kernel logs}
+document the scope of verification. Theorems~\ref{thm:real}
+and~\ref{thm:obstruction} have Lean proofs. The general spanning-tree
+argument in Theorem~\ref{thm:268}, the full spectrum in
+Theorem~\ref{thm:spectrum}, and Corollary~\ref{cor:269} have paper proofs.
+The finite experiments do not enter those proofs. Priority for the exact
+spectrum and the specified-edge realization and lower bound remains open.
 \begin{thebibliography}{9}
 \bibitem{wall} E. DeLaVi\~na, \emph{Written on the Wall II: Conjectures of
 Graffiti.pc}, nos.\ 268--269, 23 February 2007. Catalogue updated 19 November
@@ -259,6 +269,10 @@ given graph as center, \emph{Journal of Graph Theory} \textbf{5} (1981),
 Sequences, and Induced-saturation}, Ph.D. thesis, University of
 Nebraska--Lincoln, 2015, Chapter~2.
 \url{https://digitalcommons.unl.edu/mathstudent/63/}.
+\bibitem{guest} K. Guest, A. Johnson, P. Johnson, W. Jones, Y. Takahashi,
+and Z. J. Zhang, Graphs with prescribed radius, diameter, and center,
+\emph{International Journal of Mathematics and Computer Science}
+\textbf{16} (2021), 1479--1486. \url{https://arxiv.org/abs/2111.00415}.
 \end{thebibliography}
 \end{document}
 
