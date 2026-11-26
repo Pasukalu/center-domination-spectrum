@@ -822,3 +822,79 @@ end CenterDomination
 #print axioms CenterDomination.tree_midpoint_covers
 #print axioms CenterDomination.spine_cover_lift
 #print axioms CenterDomination.claim268
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- The stronger diameter estimate when the total dominating set has odd
+cardinality yields an ambient covering ball of radius at most k-1. -/
+theorem odd_total_dom_cover {G : SimpleGraph V}
+    (hc : G.Connected) (D : Finset V)
+    (dom : ∀ x, ∃ d ∈ D, G.Adj d x)
+    (odd : D.card % 2 = 1) :
+    ∃ w, Covers G (D.card - 1) w := by
+  classical
+  have hk := total_dom_card_ge_two hc D dom
+  obtain ⟨K, T, contain, inc, tree, count, diam⟩ :=
+    exists_bounded_spine_tree hc D dom
+  obtain ⟨a, b, p, hp, longest⟩ := tree_has_longest_path tree
+  obtain ⟨q, hq, eq⟩ := tree.isConnected.exists_path_of_dist a b
+  have pq : p = q := ExistsUnique.unique (tree.existsUnique_path a b) hp hq
+  have len : p.length + 1 ≤ K.card := by rw [pq, eq]; exact diam a b
+  have small : p.length ≤ 2 * (D.card - 2) := by omega
+  let w := p.getVert (p.length / 2)
+  have cov : Covers T (D.card - 2) w := by
+    intro z
+    apply (within_iff_dist tree.isConnected _ _ _).2
+    have h := tree_longest_path_bound tree p hp longest (p.length / 2) (by omega) z
+    change T.dist (p.getVert (p.length / 2)) z ≤ D.card - 2
+    omega
+  exact ⟨w.val, covers_mono (spine_cover_lift inc contain dom cov) (by omega)⟩
+
+/-- The odd-cardinality strengthening used in the partial ceiling result. -/
+theorem mean_center_le_pred_of_odd_total_dom [Fintype V] {G : SimpleGraph V}
+    (hc : G.Connected) (D : Finset V)
+    (dom : ∀ x, ∃ d ∈ D, G.Adj d x)
+    (odd : D.card % 2 = 1) :
+    meanCenter G ≤ ((D.card - 1 : ℕ) : ℚ) :=
+  mean_center_le_of_cover hc (odd_total_dom_cover hc D dom odd)
+
+/-- Partial no. 269: odd total domination cardinality, or the no-four-cycle
+case at cardinality two. The conclusion is the rational inequality before
+application of the ceiling function. -/
+theorem claim269_partial [Fintype V] {G : SimpleGraph V}
+    (hc : G.Connected) (D : Finset V)
+    (dom : ∀ x, ∃ d ∈ D, G.Adj d x)
+    (cases : D.card % 2 = 1 ∨ (D.card = 2 ∧ NoFourCycle G)) :
+    meanCenter G ≤ ((D.card - 1 : ℕ) : ℚ) := by
+  classical
+  rcases cases with odd | ⟨two, free⟩
+  · exact mean_center_le_pred_of_odd_total_dom hc D dom odd
+  · obtain ⟨root, _⟩ := (SimpleGraph.connected_iff_exists_forall_reachable G).1 hc
+    obtain ⟨a, ha, _⟩ := dom root
+    obtain ⟨b, hb, ba⟩ := dom a
+    have subset : insert a ({b} : Finset V) ⊆ D := by
+      intro x hx
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hx
+      rcases hx with rfl | rfl
+      · exact ha
+      · exact hb
+    have eq : insert a ({b} : Finset V) = D := by
+      apply Finset.eq_of_subset_of_card_le subset
+      simp [two, ba.ne.symm]
+    have edge : DomEdge G a b := by
+      refine ⟨ba.symm, ?_⟩
+      intro x
+      obtain ⟨d, hd, adj⟩ := dom x
+      rw [← eq] at hd
+      simp only [Finset.mem_insert, Finset.mem_singleton] at hd
+      rcases hd with rfl | rfl
+      · exact Or.inl adj
+      · exact Or.inr adj
+    simpa [two] using mean_center_le_one_of_noFourCycle edge free
+
+end CenterDomination
+#print axioms CenterDomination.odd_total_dom_cover
+#print axioms CenterDomination.mean_center_le_pred_of_odd_total_dom
+#print axioms CenterDomination.claim269_partial
