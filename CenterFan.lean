@@ -238,3 +238,48 @@ end CenterDomination
 #print axioms CenterDomination.Fan.ambient_card
 #print axioms CenterDomination.exists_graph_with_edge_count
 #print axioms CenterDomination.spectrum_attainment
+
+
+namespace CenterDomination
+
+/-- The full set of attainable rational means on finite graphs with
+a dominating edge and m central vertices, in the universe of Fin n. -/
+theorem spectrum_exact (m : ℕ) (hm : 2 ≤ m) (a : ℚ) :
+    (∃ (W : Type) (fin : Fintype W) (G : SimpleGraph W),
+      (∃ u v, DomEdge G u v) ∧ (@centerVertices W fin G).card = m ∧
+      @meanCenter W fin G = a) ↔
+    ∃ j : ℕ, m - 1 ≤ j ∧ j ≤ m.choose 2 ∧
+      a = 2 - (j : ℚ) / (m.choose 2 : ℚ) := by
+  classical
+  constructor
+  · rintro ⟨W, fin, G, ⟨u,v,h⟩, cm, mean⟩
+    letI : Fintype W := fin
+    have hm' : 2 ≤ (centerVertices G).card := by rw [cm]; exact hm
+    obtain ⟨j, lo, hi, eq⟩ := spectrum_necessity h hm'
+    rw [cm] at lo hi eq
+    exact ⟨j, lo, hi, mean.symm.trans eq⟩
+  · rintro ⟨j, lo, hi, rfl⟩
+    obtain ⟨G, de, cm, _, _, eq⟩ := spectrum_attainment m j hm lo hi
+    exact ⟨Fan (Fin (m - 1)), inferInstance, G, de, cm, eq⟩
+
+/-- The simplified sharp maximum is attained on exactly m+2 vertices. -/
+theorem spectrum_max_attained (m : ℕ) (hm : 2 ≤ m) :
+    ∃ G : SimpleGraph (Fan (Fin (m - 1))),
+      (∃ u v, DomEdge G u v) ∧ (centerVertices G).card = m ∧
+      Fintype.card (Fan (Fin (m - 1))) = m + 2 ∧
+      meanCenter G = 2 - 2 / (m : ℚ) ∧ (centerGraph G).IsTree := by
+  have em : m - 1 + 1 = m := by omega
+  have choose : m.choose 2 = (m - 1) + (m - 1).choose 2 := by
+    conv_lhs => rw [← em]
+    rw [Nat.choose_succ_succ', Nat.choose_one_right]
+  obtain ⟨G, ⟨u, v, de⟩, cm, card, _, mean⟩ :=
+    spectrum_attainment m (m - 1) hm (by omega) (by omega)
+  have eq : meanCenter G = 2 - 2 / (m : ℚ) := by
+    rw [mean, minimum_edge_density m hm]
+  have hm' : 2 ≤ (centerVertices G).card := by rw [cm]; exact hm
+  have tree := (spectrum_max_iff_tree de hm').1 (by simpa only [cm] using eq)
+  exact ⟨G, ⟨u,v,de⟩, cm, card, eq, tree⟩
+
+end CenterDomination
+#print axioms CenterDomination.spectrum_exact
+#print axioms CenterDomination.spectrum_max_attained
