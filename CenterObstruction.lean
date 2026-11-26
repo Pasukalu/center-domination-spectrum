@@ -619,7 +619,7 @@ theorem marked_zero_iff {V : Type u} [Fintype V] {H : SimpleGraph V} {a b : V}
       induction k generalizing x y with
       | zero =>
         change x = y ↔ i x = i y
-        exact ⟨congrArg i, inj⟩
+        exact ⟨congrArg i, fun e => inj e⟩
       | succ k ih =>
         change (Within H k x y ∨ ∃ z, H.Adj x z ∧ Within H k z y) ↔
           (Within G k (i x) (i y) ∨ ∃ z, G.Adj (i x) z ∧ Within G k z (i y))
@@ -667,7 +667,7 @@ theorem marked_one_impossible {V : Type u} {H : SimpleGraph V} {a b : V}
     ((outside_mem_iff G p).1 hp)
   rcases (labels q).1 ((outside_mem_iff G q).2 qnc) with e | e
   · exact far (Or.inl e.symm)
-  · simpa [empty] using e
+  · simp [empty] at e
 
 theorem marked_two_of_card {V : Type u} {H : SimpleGraph V} {a b : V}
     (real : MarkedAppendage H a b 2) : MarkedTwoRealizable H a b := by
@@ -688,7 +688,7 @@ theorem marked_two_of_card {V : Type u} {H : SimpleGraph V} {a b : V}
     · exact Or.inr (Or.inl e)
     · rcases (lq w).1 e with e | e
       · exact Or.inr (Or.inr e)
-      · simpa [empty] using e
+      · simp [empty] at e
 
 theorem marked_three_of_card {V : Type u} {H : SimpleGraph V} {a b : V}
     (real : MarkedAppendage H a b 3) : MarkedThreeRealizable H a b := by
@@ -717,7 +717,7 @@ theorem marked_three_of_card {V : Type u} {H : SimpleGraph V} {a b : V}
       · exact Or.inr (Or.inr (Or.inl e))
       · rcases (lz w).1 e with e | e
         · exact Or.inr (Or.inr (Or.inr e))
-        · simpa [empty] using e
+        · simp [empty] at e
 
 theorem marked_appendage_two_of_partition {V : Type u} [Fintype V]
     {H : SimpleGraph V} {a b : V} {A : V → Prop}
