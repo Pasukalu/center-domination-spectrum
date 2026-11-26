@@ -26,7 +26,8 @@ theorem two_outside_of_noncentral [Fintype W] (hc : G.Connected)
   have hyn : ¬ Central G y := by
     intro cy
     have hle := (within_iff_dist hc r y x).1 (cy r hex x)
-    exact hfar ((G.dist_comm x y).le.trans hle)
+    have hsymm : G.dist x y = G.dist y x := SimpleGraph.dist_comm
+    exact hfar (hsymm.le.trans hle)
   have sub : ({x, y} : Finset W) ⊆ outside G := by
     intro z hz
     simp only [Finset.mem_insert, Finset.mem_singleton] at hz
