@@ -309,3 +309,64 @@ theorem marked_partition_exists_of_two_labels {V W : Type*}
 end CenterDomination
 #print axioms CenterDomination.marked_partition_of_two_labels
 #print axioms CenterDomination.marked_partition_exists_of_two_labels
+
+
+namespace CenterDomination
+universe u
+
+/-- The finite ambient graph has precisely two distinct extra labels, its
+entire center is the old image, and the marked edge remains dominating. -/
+def MarkedTwoRealizable {V : Type u} (H : SimpleGraph V) (a b : V) : Prop :=
+  ∃ (W : Type u) (_fin : Finite W) (G : SimpleGraph W) (i : V → W) (p q : W),
+    Function.Injective i ∧
+    (∀ x y, G.Adj (i x) (i y) ↔ H.Adj x y) ∧
+    (∀ z, Central G z ↔ ∃ x, z = i x) ∧
+    (∀ x, i x ≠ p) ∧ (∀ x, i x ≠ q) ∧ p ≠ q ∧
+    (∀ z, (∃ x, z = i x) ∨ z = p ∨ z = q) ∧
+    DomEdge G (i a) (i b)
+
+/-- Equivalence for noncomplete old graphs. This proves the two-appendage
+criterion at the graph level; the three-to-two reduction is separate. -/
+theorem marked_two_realizable_iff {V : Type u} [Fintype V]
+    {H : SimpleGraph V} {a b : V} (h : DomEdge H a b)
+    (noncomplete : ∃ x y, x ≠ y ∧ ¬ H.Adj x y) :
+    MarkedTwoRealizable H a b ↔ ∃ A : V → Prop, MarkedPartition H a b A := by
+  constructor
+  · rintro ⟨W, _, G, i, p, q, inj, edges, image, hp, hq, _, labels, mark⟩
+    obtain ⟨x, y, hxy, hnxy⟩ := noncomplete
+    have cx : Central G (i x) := (image (i x)).2 ⟨x, rfl⟩
+    have noOne : ¬ ∃ w, Covers G 1 w := by
+      intro hex
+      rcases within_one.1 ((cx 1 hex) (i y)) with e | e
+      · exact hxy (inj e)
+      · exact hnxy ((edges x y).1 e)
+    have hu := (endpoints_cover_two mark).1
+    have cov (z : V) : Covers G 2 (i z) :=
+      ((image (i z)).2 ⟨z, rfl⟩) 2 ⟨i a, hu⟩
+    have pnc : ¬ Central G p := by
+      intro cp
+      obtain ⟨z, hz⟩ := (image p).1 cp
+      exact hp z hz.symm
+    obtain ⟨t, tnc, tfar⟩ := far_partner hu noOne pnc
+    rcases labels t with ⟨z, rfl⟩ | rfl | rfl
+    · exact (tnc ((image (i z)).2 ⟨z, rfl⟩)).elim
+    · exact (tfar (Or.inl rfl)).elim
+    · exact marked_partition_exists_of_two_labels inj edges labels hp hq tfar cov mark
+  · rintro ⟨A, part⟩
+    obtain ⟨inj, edges, image, mark, _⟩ := TwoExt.realizes_two h part
+    refine ⟨TwoExt V, inferInstance, TwoExt.extend H A, TwoExt.old,
+      TwoExt.left, TwoExt.right, inj, edges, image, ?_, ?_, ?_, ?_, mark⟩
+    · intro x e
+      cases e
+    · intro x e
+      cases e
+    · intro e
+      cases e
+    · intro z
+      cases z with
+      | old x => exact Or.inl ⟨x, rfl⟩
+      | left => exact Or.inr (Or.inl rfl)
+      | right => exact Or.inr (Or.inr rfl)
+
+end CenterDomination
+#print axioms CenterDomination.marked_two_realizable_iff
