@@ -550,3 +550,257 @@ end CenterDomination
 #print axioms CenterDomination.marked_partition_of_three_path
 #print axioms CenterDomination.marked_partition_exists_of_three_path
 #print axioms CenterDomination.marked_three_implies_two
+
+
+namespace CenterDomination
+universe u
+
+/-- A realization with exactly n noncentral vertices, counted in the finite
+ambient graph rather than in a preselected list of labels. -/
+def MarkedAppendage {V : Type u} (H : SimpleGraph V) (a b : V) (n : ℕ) : Prop :=
+  ∃ (W : Type u) (fin : Fintype W) (G : SimpleGraph W) (i : V → W),
+    Function.Injective i ∧
+    (∀ x y, G.Adj (i x) (i y) ↔ H.Adj x y) ∧
+    (∀ w, Central G w ↔ ∃ x, w = i x) ∧
+    DomEdge G (i a) (i b) ∧ (@outside W fin G).card = n
+
+def MarkedMinimum {V : Type u} (H : SimpleGraph V) (a b : V) (n : ℕ) : Prop :=
+  MarkedAppendage H a b n ∧ ∀ k, MarkedAppendage H a b k → n ≤ k
+
+private theorem splitFinset {W : Type*} (s : Finset W) (h : 0 < s.card) :
+    ∃ p : W, ∃ t : Finset W, p ∈ s ∧ p ∉ t ∧ t.card + 1 = s.card ∧
+      ∀ w, w ∈ s ↔ w = p ∨ w ∈ t := by
+  classical
+  obtain ⟨p, hp⟩ := Finset.card_pos.mp h
+  refine ⟨p, s.erase p, hp, by simp, ?_, ?_⟩
+  · have e := Finset.card_erase_of_mem hp
+    omega
+  · intro w
+    by_cases e : w = p
+    · subst w
+      simp [hp]
+    · simp [Finset.mem_erase, e]
+
+private theorem outside_mem_iff {W : Type*} [Fintype W] (G : SimpleGraph W) (w : W) :
+    w ∈ outside G ↔ ¬ Central G w := by
+  classical
+  simp [outside]
+
+private theorem old_not_outside {V W : Type*} [Fintype W] {G : SimpleGraph W}
+    {i : V → W} (image : ∀ w, Central G w ↔ ∃ x, w = i x) (x : V) :
+    i x ∉ outside G :=
+  fun e => (outside_mem_iff G _).1 e ((image _).2 ⟨x, rfl⟩)
+
+private theorem old_ne_of_outside {V W : Type*} [Fintype W] {G : SimpleGraph W}
+    {i : V → W} (image : ∀ w, Central G w ↔ ∃ x, w = i x)
+    {p : W} (hp : p ∈ outside G) : ∀ x, i x ≠ p := by
+  intro x e
+  exact old_not_outside image x (e.symm ▸ hp)
+
+/-- Zero additions are equivalent to self-centeredness. -/
+theorem marked_zero_iff {V : Type u} [Fintype V] {H : SimpleGraph V} {a b : V}
+    (h : DomEdge H a b) :
+    MarkedAppendage H a b 0 ↔ ∀ x, Central H x := by
+  classical
+  constructor
+  · rintro ⟨W, fin, G, i, inj, edges, image, mark, card⟩
+    letI : Fintype W := fin
+    have surj : Function.Surjective i := by
+      intro w
+      have central : Central G w := by
+        by_contra hn
+        have mem := (outside_mem_iff G w).2 hn
+        have empty : outside G = ∅ := Finset.card_eq_zero.mp card
+        rw [empty] at mem
+        simp at mem
+      obtain ⟨x, e⟩ := (image w).1 central
+      exact ⟨x, e.symm⟩
+    have bridge (k : ℕ) (x y : V) : Within H k x y ↔ Within G k (i x) (i y) := by
+      induction k generalizing x y with
+      | zero =>
+        change x = y ↔ i x = i y
+        exact ⟨congrArg i, inj⟩
+      | succ k ih =>
+        change (Within H k x y ∨ ∃ z, H.Adj x z ∧ Within H k z y) ↔
+          (Within G k (i x) (i y) ∨ ∃ z, G.Adj (i x) z ∧ Within G k z (i y))
+        constructor
+        · rintro (e | ⟨z, e, w⟩)
+          · exact Or.inl ((ih x y).1 e)
+          · exact Or.inr ⟨i z, (edges x z).2 e, (ih z y).1 w⟩
+        · rintro (e | ⟨z, e, w⟩)
+          · exact Or.inl ((ih x y).2 e)
+          · obtain ⟨z, rfl⟩ := surj z
+            exact Or.inr ⟨z, (edges x z).1 e, (ih z y).2 w⟩
+    intro x k hex y
+    obtain ⟨w, cov⟩ := hex
+    have ambientCover : Covers G k (i w) := by
+      intro z
+      obtain ⟨z, rfl⟩ := surj z
+      exact (bridge k w z).1 (cov z)
+    exact (bridge k x y).2 (((image _).2 ⟨x, rfl⟩) k ⟨i w, ambientCover⟩ (i y))
+  · intro all
+    refine ⟨V, inferInstance, H, id, fun _ _ e => e, fun _ _ => Iff.rfl,
+      ?_, h, ?_⟩
+    · intro w
+      exact ⟨fun _ => ⟨w, rfl⟩, fun _ => all w⟩
+    · have empty : outside H = ∅ := by
+        ext w
+        simp [outside, all w]
+      simp [empty]
+
+/-- A noncomplete induced center cannot have exactly one outside vertex
+when the marked dominating edge is preserved. -/
+theorem marked_one_impossible {V : Type u} {H : SimpleGraph V} {a b : V}
+    (nc : ∃ x y, x ≠ y ∧ ¬ H.Adj x y) : ¬ MarkedAppendage H a b 1 := by
+  classical
+  rintro ⟨W, fin, G, i, inj, edges, image, mark, card⟩
+  letI : Fintype W := fin
+  obtain ⟨x, y, ne, na⟩ := nc
+  have noOne : ¬ ∃ w, Covers G 1 w := by
+    intro hex
+    rcases within_one.1 (((image _).2 ⟨x, rfl⟩) 1 hex (i y)) with e | e
+    · exact ne (inj e)
+    · exact na ((edges x y).1 e)
+  obtain ⟨p, t, hp, _, ct, labels⟩ := splitFinset (outside G) (by omega)
+  have empty : t = ∅ := Finset.card_eq_zero.mp (by omega)
+  obtain ⟨q, qnc, far⟩ := far_partner (endpoints_cover_two mark).1 noOne
+    ((outside_mem_iff G p).1 hp)
+  rcases (labels q).1 ((outside_mem_iff G q).2 qnc) with e | e
+  · exact far (Or.inl e.symm)
+  · simpa [empty] using e
+
+theorem marked_two_of_card {V : Type u} {H : SimpleGraph V} {a b : V}
+    (real : MarkedAppendage H a b 2) : MarkedTwoRealizable H a b := by
+  classical
+  obtain ⟨W, fin, G, i, inj, edges, image, mark, card⟩ := real
+  letI : Fintype W := fin
+  obtain ⟨p, t, hp, hpt, ct, lp⟩ := splitFinset (outside G) (by omega)
+  obtain ⟨q, s, hq, _, cs, lq⟩ := splitFinset t (by omega)
+  have empty : s = ∅ := Finset.card_eq_zero.mp (by omega)
+  have hq' : q ∈ outside G := (lp q).2 (Or.inr hq)
+  have pq : p ≠ q := fun e => hpt (e.symm ▸ hq)
+  refine ⟨W, inferInstance, G, i, p, q, inj, edges, image,
+    old_ne_of_outside image hp, old_ne_of_outside image hq', pq, ?_, mark⟩
+  intro w
+  by_cases hc : Central G w
+  · exact Or.inl ((image w).1 hc)
+  · rcases (lp w).1 ((outside_mem_iff G w).2 hc) with e | e
+    · exact Or.inr (Or.inl e)
+    · rcases (lq w).1 e with e | e
+      · exact Or.inr (Or.inr e)
+      · simpa [empty] using e
+
+theorem marked_three_of_card {V : Type u} {H : SimpleGraph V} {a b : V}
+    (real : MarkedAppendage H a b 3) : MarkedThreeRealizable H a b := by
+  classical
+  obtain ⟨W, fin, G, i, inj, edges, image, mark, card⟩ := real
+  letI : Fintype W := fin
+  obtain ⟨p, t, hp, hpt, ct, lp⟩ := splitFinset (outside G) (by omega)
+  obtain ⟨q, s, hq, hqs, cs, lq⟩ := splitFinset t (by omega)
+  obtain ⟨z, r, hz, _, cr, lz⟩ := splitFinset s (by omega)
+  have empty : r = ∅ := Finset.card_eq_zero.mp (by omega)
+  have hzt : z ∈ t := (lq z).2 (Or.inr hz)
+  have hq' : q ∈ outside G := (lp q).2 (Or.inr hq)
+  have hz' : z ∈ outside G := (lp z).2 (Or.inr hzt)
+  have pq : p ≠ q := fun e => hpt (e.symm ▸ hq)
+  have pz : p ≠ z := fun e => hpt (e.symm ▸ hzt)
+  have qz : q ≠ z := fun e => hqs (e.symm ▸ hz)
+  refine ⟨W, inferInstance, G, i, p, q, z, inj, edges, image,
+    old_ne_of_outside image hp, old_ne_of_outside image hq',
+    old_ne_of_outside image hz', pq, pz, qz, ?_, mark⟩
+  intro w
+  by_cases hc : Central G w
+  · exact Or.inl ((image w).1 hc)
+  · rcases (lp w).1 ((outside_mem_iff G w).2 hc) with e | e
+    · exact Or.inr (Or.inl e)
+    · rcases (lq w).1 e with e | e
+      · exact Or.inr (Or.inr (Or.inl e))
+      · rcases (lz w).1 e with e | e
+        · exact Or.inr (Or.inr (Or.inr e))
+        · simpa [empty] using e
+
+theorem marked_appendage_two_of_partition {V : Type u} [Fintype V]
+    {H : SimpleGraph V} {a b : V} {A : V → Prop}
+    (h : DomEdge H a b) (part : MarkedPartition H a b A) :
+    MarkedAppendage H a b 2 := by
+  obtain ⟨inj, edges, image, mark, count⟩ := TwoExt.realizes_two h part
+  exact ⟨TwoExt V, inferInstance, TwoExt.extend H A, TwoExt.old,
+    inj, edges, image, mark, count⟩
+
+theorem marked_appendage_four {V : Type u} [Fintype V]
+    {H : SimpleGraph V} {a b : V} (h : DomEdge H a b) :
+    MarkedAppendage H a b 4 := by
+  obtain ⟨inj, edges, image, mark⟩ := Ext.realizes_center h
+  exact ⟨Ext V, inferInstance, Ext.extend H a b, Ext.old,
+    inj, edges, image, mark, Ext.four_outside h⟩
+
+private theorem noncomplete_of_not_self_centered {V : Type*}
+    {H : SimpleGraph V} (notSelf : ¬ ∀ x, Central H x) :
+    ∃ x y, x ≠ y ∧ ¬ H.Adj x y := by
+  classical
+  by_contra hn
+  apply notSelf
+  intro x r hex
+  by_cases small : r = 0
+  · subst r
+    obtain ⟨w, cov⟩ := hex
+    intro y
+    exact (cov x).symm.trans (cov y)
+  · have h1 : Covers H 1 x := by
+      intro y
+      apply within_one.2
+      by_cases eq : x = y
+      · exact Or.inl eq
+      · exact Or.inr (by
+          by_contra na
+          exact hn ⟨x, y, eq, na⟩)
+    exact covers_mono h1 (by omega)
+
+/-- Integrated minimum theorem: the least actual outside cardinality is
+zero for self-centered H, two for the partition case, and four otherwise.
+No hypothesis about a preselected list of outside labels is required. -/
+theorem marked_minimum_classification {V : Type u} [Fintype V]
+    {H : SimpleGraph V} {a b : V} (h : DomEdge H a b) :
+    ((∀ x, Central H x) ∧ MarkedMinimum H a b 0) ∨
+    ((¬ ∀ x, Central H x) ∧ (∃ A : V → Prop, MarkedPartition H a b A) ∧
+      MarkedMinimum H a b 2) ∨
+    ((¬ ∀ x, Central H x) ∧ (¬ ∃ A : V → Prop, MarkedPartition H a b A) ∧
+      MarkedMinimum H a b 4) := by
+  classical
+  by_cases self : ∀ x, Central H x
+  · exact Or.inl ⟨self, (marked_zero_iff h).2 self, fun _ _ => Nat.zero_le _⟩
+  · have nc := noncomplete_of_not_self_centered self
+    have noZero : ¬ MarkedAppendage H a b 0 := fun r => self ((marked_zero_iff h).1 r)
+    have noOne := marked_one_impossible (a := a) (b := b) nc
+    by_cases partition : ∃ A : V → Prop, MarkedPartition H a b A
+    · obtain ⟨A, part⟩ := partition
+      refine Or.inr (Or.inl ⟨self, ⟨A, part⟩, marked_appendage_two_of_partition h part, ?_⟩)
+      intro k r
+      by_contra hn
+      have cases : k = 0 ∨ k = 1 := by omega
+      rcases cases with rfl | rfl
+      · exact noZero r
+      · exact noOne r
+    · have noTwo : ¬ MarkedAppendage H a b 2 := fun r =>
+        partition ((marked_two_realizable_iff h nc).1 (marked_two_of_card r))
+      have noThree : ¬ MarkedAppendage H a b 3 := fun r =>
+        partition ((marked_two_realizable_iff h nc).1
+          (marked_three_implies_two h nc (marked_three_of_card r)))
+      refine Or.inr (Or.inr ⟨self, partition, marked_appendage_four h, ?_⟩)
+      intro k r
+      by_contra hn
+      have cases : k = 0 ∨ k = 1 ∨ k = 2 ∨ k = 3 := by omega
+      rcases cases with rfl | rfl | rfl | rfl
+      · exact noZero r
+      · exact noOne r
+      · exact noTwo r
+      · exact noThree r
+
+end CenterDomination
+#print axioms CenterDomination.marked_zero_iff
+#print axioms CenterDomination.marked_one_impossible
+#print axioms CenterDomination.marked_two_of_card
+#print axioms CenterDomination.marked_three_of_card
+#print axioms CenterDomination.marked_appendage_two_of_partition
+#print axioms CenterDomination.marked_appendage_four
+#print axioms CenterDomination.marked_minimum_classification
