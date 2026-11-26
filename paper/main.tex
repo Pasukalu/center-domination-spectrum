@@ -61,7 +61,7 @@ realization questions concern the internal distances and edges of $C$.
 
 \section{A central edge in the equality case}
 \begin{lem}\label{lem:spine}
-Let $D$ be a total dominating set of size $k$, and let $c$ be the
+Let $G$ be a connected graph, let $D$ be a total dominating set of size $k$, and let $c$ be the
 number of components of $G[D]$. Then $G$ has a spanning tree of diameter at
 most $k+2c-1$. In particular $2c\le k$.
 \end{lem}
@@ -95,13 +95,13 @@ midpoint, and the two endpoints give the matching lower bound.
 Distances can only decrease on passage from $T$ to $G$. Consequently
 $r=\rad(G)\le k$, with $r\le k-1$ for odd $k$.
 
-Every distance averaged in $\av$ is at most $r$. It remains to consider
+Every distance averaged in $\av$ is at most $r$. If $r<k$, the strict bound follows, including a singleton center under our convention. It remains to consider
 $r=k$. Then $T$ must have diameter $2k-1$. Its two adjacent middle
 vertices $u,v$ both have eccentricity $k$ in $T$ and hence in $G$,
 as $k$ is already the minimum eccentricity in $G$. Thus $u,v\in C$.
 Their mutual distance $1$ is strictly less than $k$ since every total
 dominating set has at least two members. The finite average is strictly
-less than $k$. The singleton convention also gives the strict bound.
+less than $k$.
 Finally $\lfloor 1+a\rfloor\le k$ is equivalent to $a<k$ for integer $k$.
 \end{proof}
 
