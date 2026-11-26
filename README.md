@@ -1,8 +1,8 @@
 # Distances between central vertices in graphs with small total domination number
 
-> **Phase III: mathematical verification milestone reached; research preview pending final packaging and review.** [CI #114](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45869576150) passed all three jobs, including 84 audited declaration dependencies and independent fresh kernel replay. This is a proof-verification result, not a guarantee of academic priority or publication readiness. See [independent audit](verification/phase2-independent-audit-2026-11-26.md) and [Phase III verification record](verification/phase3-preview.md).
+> **Phase III: mathematical verification milestone reached; research preview pending final packaging and review.** [CI #120](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45871760984) passed all three jobs, including 84 audited declaration dependencies and independent fresh kernel replay. This is a proof-verification result, not a guarantee of academic priority or publication readiness. See [independent audit](verification/phase2-independent-audit-2026-11-26.md) and [Phase III verification record](verification/phase3-preview.md).
 
-[CI-compiled manuscript at the verified revision](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45869576150/artifacts/15142406315) (ZIP; expires according to GitHub artifact retention) · [Historical checked-in PDF](paper/main.pdf) (outdated; use the current LaTeX source or a current CI artifact) · [LaTeX source](paper/main.tex) · [Selection and priority audit](research/selection-and-priority.md) · [Proof review](verification/proof-review.md) · [Research checks](https://github.com/Pasukalu/center-domination-spectrum/actions/workflows/research.yml)
+[Archived manuscript PDF](paper/main.pdf) · [SHA-256 manifest](paper/main.pdf.sha256) · [CI #120 manuscript build](https://github.com/Pasukalu/center-domination-spectrum/actions/runs/45871760984/artifacts/15141784638) (temporary ZIP) · [LaTeX source](paper/main.tex) · [Selection and priority audit](research/selection-and-priority.md) · [Proof review](verification/proof-review.md) · [Research checks](https://github.com/Pasukalu/center-domination-spectrum/actions/workflows/research.yml)
 
 Let *C* be the vertices of minimum eccentricity in a finite connected simple graph, and let `mean(C)` average their ambient distances over distinct unordered pairs. The manuscript uses zero for a singleton center. A dominating edge is an edge whose endpoints together supply a neighbor to every vertex.
 
@@ -43,6 +43,8 @@ The first enumerator uses integers and rational numbers. It checks 27,475 connec
 The new dependency-free Node.js check independently enumerates all 238 labelled graphs of orders 2–5 with fixed dominating edge 0–1. Counts for minima 0/2/4 are 48/170/20. For all 190 non-self-centered cases it compares the partition criterion with exhaustive two-vertex realizability; all 17 non-self-centered cases of orders 2–4 also have exhaustive three-vertex searches, with no three-only example. Four follows from the construction and classification proof, not a four-vertex exhaustive search. See [the follow-up audit](verification/marked-classification-audit.md).
 
 The constructive spanning-spine checker executes Lemma 2.1 on 100,365 total dominating set certificates across 27,475 connected labelled graphs: all total dominating sets for orders 2–5 and all minimum total dominating sets for order 6. It verifies the constructed tree's edge count, diameter and midpoint conditions. The implementation was executed before commit; the saved Node script is now included in CI. This finite experiment does not formalize the universal construction.
+
+Verify the archived PDF from the repository root with `sha256sum -c paper/main.pdf.sha256`.
 
 Compile the manuscript with TeX Live's `pdflatex`, the Latin Modern fonts and the packages declared in its preamble.
 
