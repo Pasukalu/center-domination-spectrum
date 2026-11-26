@@ -31,6 +31,7 @@ jobs:
       - run: diff -u experiments/results.json /tmp/center-results.json
       - run: python3 experiments/independent_check.py
       - run: python3 experiments/check_appendages.py
+      - run: node experiments/check_marked_classification.js
   manuscript:
     runs-on: ubuntu-latest
     steps:

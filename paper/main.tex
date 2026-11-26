@@ -29,7 +29,8 @@ center. We also characterize the induced center graphs in this class by a
 construction preserving a specified dominating edge. When both ends of
 that edge have pendant neighbors, four additional vertices are necessary
 and sufficient. This gives an infinite family for which preserving the
-edge increases the minimum from two to four.
+edge increases the minimum from two to four. More generally, the marked minimum belongs to
+$\{0,2,4\}$, and a partition criterion characterizes the value two.
 \end{abstract}
 
 \section{The question}
@@ -61,7 +62,7 @@ realization questions concern the internal distances and edges of $C$.
 
 \section{A central edge in the equality case}
 \begin{lem}\label{lem:spine}
-Let $D$ be a total dominating set of size $k$, and let $c$ be the
+Let $G$ be a connected graph, let $D$ be a total dominating set of size $k$, and let $c$ be the
 number of components of $G[D]$. Then $G$ has a spanning tree of diameter at
 most $k+2c-1$. In particular $2c\le k$.
 \end{lem}
@@ -95,13 +96,13 @@ midpoint, and the two endpoints give the matching lower bound.
 Distances can only decrease on passage from $T$ to $G$. Consequently
 $r=\rad(G)\le k$, with $r\le k-1$ for odd $k$.
 
-Every distance averaged in $\av$ is at most $r$. It remains to consider
+Every distance averaged in $\av$ is at most $r$. If $r<k$, the strict bound follows, including a singleton center under our convention. It remains to consider
 $r=k$. Then $T$ must have diameter $2k-1$. Its two adjacent middle
 vertices $u,v$ both have eccentricity $k$ in $T$ and hence in $G$,
 as $k$ is already the minimum eccentricity in $G$. Thus $u,v\in C$.
 Their mutual distance $1$ is strictly less than $k$ since every total
 dominating set has at least two members. The finite average is strictly
-less than $k$. The singleton convention also gives the strict bound.
+less than $k$.
 Finally $\lfloor 1+a\rfloor\le k$ is equivalent to $a<k$ for integer $k$.
 \end{proof}
 
@@ -214,6 +215,88 @@ two. At least two additions are necessary since $H$ is not self-centered
 and a diametrical pair is outside any proper center. Theorem~\ref{thm:obstruction}
 shows that requiring the original central edge to dominate increases the
 minimum from two to four throughout this infinite family.
+
+
+\subsection{A classification of the marked appendage number}
+For a graph $H$ with a specified dominating edge $uv$, define $a(H;uv)$
+to be the minimum number of new vertices in an induced-center realization
+that preserves $uv$ as a dominating edge. A graph is self-centered if all
+its vertices have the same eccentricity. Here an ordinary dominating set
+meets every closed neighborhood.
+
+\begin{thm}\label{thm:marked-classification}
+If $H$ is self-centered, then $a(H;uv)=0$. Otherwise $a(H;uv)=2$
+if and only if there is a partition $V(H)=A\sqcup B$ such that
+\begin{enumerate}
+\item $u\in A$ and $v\in B$;
+\item both $A$ and $B$ are ordinary dominating sets of $H$;
+\item every pair at distance three in $H$ belongs to the same part.
+\end{enumerate}
+In all remaining cases $a(H;uv)=4$. In particular the value three
+does not occur.
+\end{thm}
+\begin{proof}
+The zero case is immediate. Suppose henceforth that $H$ is not self-centered.
+It is not complete. Every realization preserving $uv$ has diameter at most
+three and radius at most two. Its radius cannot be one because its center
+induces the noncomplete graph $H$: vertices of eccentricity one form a
+clique. Hence every old vertex has eccentricity two and every new vertex
+has eccentricity three. A new vertex must have a distance-three partner
+among the new vertices, so one addition cannot suffice.
+
+First suppose there is a realization with two new vertices $p,q$. They
+are at distance three. Their old neighborhoods $P,Q$ are disjoint.
+Each meets every closed neighborhood in $H$, since every old vertex is
+within distance two of each of $p,q$ and $pq$ is not an edge.
+The dominating edge $uv$ forces one of $u,v$ into each neighborhood;
+rename $p,q$ so that $u\in P$ and $v\in Q$.
+If an old pair has distance three in $H$, its distance in the
+realization is at most two, so it shares a new neighbor. Thus both
+vertices belong to $P$ or both to $Q$. Assign all remaining old vertices
+arbitrarily to one of the two parts to obtain the required partition.
+This preserves the domination and distance conditions.
+
+Conversely, given such a partition add nonadjacent vertices $p,q$
+with old neighborhoods $A,B$ respectively. They share no neighbor,
+but $p,u,v,q$ is a path, so their distance is three.
+The edge $uv$ remains dominating. Every old vertex is within two of
+both new vertices by the two domination conditions. Two old vertices
+at distance at most two in $H$ retain this upper bound; a pair at
+distance three shares a new neighbor by condition (3).
+Every old vertex misses exactly one of $p,q$, so has eccentricity
+two, and both new vertices have eccentricity three. This proves the
+two-addition characterization.
+
+Now suppose a realization uses three new vertices. Form the auxiliary
+graph on these vertices with an edge for each distance-three pair.
+It has no isolated vertices. It cannot contain a triangle: any
+distance-three pair has disjoint neighborhoods in $\{u,v\}$,
+and every new vertex has a nonempty neighborhood there.
+The auxiliary graph is therefore a path, say $p,q,z$.
+Replace $p,z$ by a single new vertex $w$ whose old neighborhood is the
+union of theirs, keep $q$ and its old neighborhood, and leave $w,q$
+nonadjacent. The old neighborhoods of $w,q$ are disjoint, and they
+meet opposite endpoints of $uv$, so $d(w,q)=3$.
+Every old pair at distance at most two in the previous realization
+retains that bound (a common neighbor $p$ or $z$ is replaced by $w$).
+Every old vertex remains within two of $q$, because neither $p$ nor
+$z$ was adjacent to $q$. Every old vertex remains within two of $w$:
+a path of length at most two to $p$ via an old vertex survives, and a
+path via $z$ becomes an edge to $w$. There is no path via $q$ since
+$p,q$ are nonadjacent. As the new neighborhoods are disjoint, no
+old vertex is universal. The center is again exactly $H$, and $uv$
+still dominates. Thus any three-addition realization yields a
+two-addition realization.
+
+The universal four-addition construction of Theorem~\ref{thm:real}
+now completes the classification.
+\end{proof}
+
+This classification concerns a specified dominating edge, not the
+classical unrestricted centralizing number. For the latter, the
+values zero, two, three and four can occur \cite{bms,behrens}.
+The marked classification is a candidate contribution, pending
+further priority review and formal verification.
 
 \section{The ceiling variant}
 \begin{cor}\label{cor:269}
