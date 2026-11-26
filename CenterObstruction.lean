@@ -370,3 +370,183 @@ theorem marked_two_realizable_iff {V : Type u} [Fintype V]
 
 end CenterDomination
 #print axioms CenterDomination.marked_two_realizable_iff
+
+
+namespace CenterDomination
+
+/-- Swapping the parts swaps the designated endpoints. -/
+theorem MarkedPartition.complement {V : Type*} {H : SimpleGraph V}
+    {u v : V} {A : V → Prop} (part : MarkedPartition H v u A) :
+    MarkedPartition H u v (fun x => ¬ A x) := by
+  refine ⟨part.rightEndpoint, fun hn => hn part.leftEndpoint,
+    part.rightCover, ?_, ?_⟩
+  · intro x
+    obtain ⟨y, hy, hxy⟩ := part.leftCover x
+    exact ⟨y, fun hn => hn hy, hxy⟩
+  · intro x y far
+    exact not_congr (part.sameSide x y far)
+
+/-- Merge the two end labels of the auxiliary far path at the level of
+their old neighborhoods. The result is a marked partition. -/
+theorem marked_partition_of_three_path {V W : Type*}
+    {H : SimpleGraph V} {G : SimpleGraph W} {u v : V}
+    {i : V → W} {p q z : W}
+    (inj : Function.Injective i)
+    (edges : ∀ x y, G.Adj (i x) (i y) ↔ H.Adj x y)
+    (labels : ∀ w, (∃ y, w = i y) ∨ w = p ∨ w = q ∨ w = z)
+    (hp : ∀ x, i x ≠ p) (hq : ∀ x, i x ≠ q)
+    (fpq : ¬ Short G p q) (fzq : ¬ Short G z q)
+    (covers : ∀ x, Covers G 2 (i x))
+    (up : G.Adj (i u) p) (vq : G.Adj (i v) q) :
+    MarkedPartition H u v (fun x => G.Adj (i x) p ∨ G.Adj (i x) z) := by
+  have disjoint (x : V) (e : G.Adj (i x) q) :
+      ¬ (G.Adj (i x) p ∨ G.Adj (i x) z) := by
+    rintro (a | a)
+    · exact fpq (Or.inr (Or.inr ⟨i x, a.symm, e⟩))
+    · exact fzq (Or.inr (Or.inr ⟨i x, a.symm, e⟩))
+  have npq : ¬ G.Adj p q := fun e => fpq (Or.inr (Or.inl e))
+  have nzq : ¬ G.Adj z q := fun e => fzq (Or.inr (Or.inl e))
+  refine ⟨Or.inl up, disjoint v vq, ?_, ?_, ?_⟩
+  · intro x
+    rcases within_two.1 (covers x p) with e | e | ⟨w, xw, wp⟩
+    · exact (hp x e).elim
+    · exact ⟨x, Or.inl e, Or.inl rfl⟩
+    · rcases labels w with ⟨y, rfl⟩ | rfl | rfl | rfl
+      · exact ⟨y, Or.inl wp, Or.inr ((edges x y).1 xw)⟩
+      · exact (wp.ne rfl).elim
+      · exact (npq wp.symm).elim
+      · exact ⟨x, Or.inr xw, Or.inl rfl⟩
+  · intro x
+    rcases within_two.1 (covers x q) with e | e | ⟨w, xw, wq⟩
+    · exact (hq x e).elim
+    · exact ⟨x, disjoint x e, Or.inl rfl⟩
+    · rcases labels w with ⟨y, rfl⟩ | rfl | rfl | rfl
+      · exact ⟨y, disjoint y wq, Or.inr ((edges x y).1 xw)⟩
+      · exact (npq wq).elim
+      · exact (wq.ne rfl).elim
+      · exact (nzq wq).elim
+  · intro x y hf
+    rcases within_two.1 (covers x (i y)) with e | e | ⟨w, xw, wy⟩
+    · exact (hf (Or.inl (inj e))).elim
+    · exact (hf (Or.inr (Or.inl ((edges x y).1 e)))).elim
+    · rcases labels w with ⟨a, rfl⟩ | rfl | rfl | rfl
+      · exact (hf (Or.inr (Or.inr ⟨a, (edges x a).1 xw, (edges a y).1 wy⟩))).elim
+      · exact ⟨fun _ => Or.inl wy.symm, fun _ => Or.inl xw⟩
+      · exact ⟨fun a => (disjoint x xw a).elim,
+          fun b => (disjoint y wy.symm b).elim⟩
+      · exact ⟨fun _ => Or.inr wy.symm, fun _ => Or.inr xw⟩
+
+theorem marked_partition_exists_of_three_path {V W : Type*}
+    {H : SimpleGraph V} {G : SimpleGraph W} {u v : V}
+    {i : V → W} {p q z : W}
+    (inj : Function.Injective i)
+    (edges : ∀ x y, G.Adj (i x) (i y) ↔ H.Adj x y)
+    (labels : ∀ w, (∃ y, w = i y) ∨ w = p ∨ w = q ∨ w = z)
+    (hp : ∀ x, i x ≠ p) (hq : ∀ x, i x ≠ q)
+    (fpq : ¬ Short G p q) (fzq : ¬ Short G z q)
+    (covers : ∀ x, Covers G 2 (i x))
+    (mark : DomEdge G (i u) (i v)) :
+    ∃ A : V → Prop, MarkedPartition H u v A := by
+  rcases mark.2 q with uq | vq
+  · have vp : G.Adj (i v) p := (mark.2 p).resolve_left
+      (fun up => fpq (Or.inr (Or.inr ⟨i u, up.symm, uq⟩)))
+    have part : MarkedPartition H v u (fun x => G.Adj (i x) p ∨ G.Adj (i x) z) :=
+      marked_partition_of_three_path inj edges labels hp hq fpq fzq covers vp uq
+    exact ⟨_, part.complement⟩
+  · have up : G.Adj (i u) p := (mark.2 p).resolve_right
+      (fun vp => fpq (Or.inr (Or.inr ⟨i v, vp.symm, vq⟩)))
+    exact ⟨_, marked_partition_of_three_path inj edges labels hp hq fpq fzq covers up vq⟩
+
+universe u
+
+/-- A realization with three extra labels. Disjointness and exhaustiveness
+are explicit so the statement does not merely assert an upper bound. -/
+def MarkedThreeRealizable {V : Type u} (H : SimpleGraph V) (a b : V) : Prop :=
+  ∃ (W : Type u) (_fin : Finite W) (G : SimpleGraph W) (i : V → W) (p q z : W),
+    Function.Injective i ∧
+    (∀ x y, G.Adj (i x) (i y) ↔ H.Adj x y) ∧
+    (∀ w, Central G w ↔ ∃ x, w = i x) ∧
+    (∀ x, i x ≠ p) ∧ (∀ x, i x ≠ q) ∧ (∀ x, i x ≠ z) ∧
+    p ≠ q ∧ p ≠ z ∧ q ≠ z ∧
+    (∀ w, (∃ x, w = i x) ∨ w = p ∨ w = q ∨ w = z) ∧
+    DomEdge G (i a) (i b)
+
+/-- The three-to-two reduction for the marked appendage number. The proof
+extracts a far path and constructs a two-part partition. -/
+theorem marked_three_implies_two {V : Type u} [Fintype V]
+    {H : SimpleGraph V} {a b : V} (h : DomEdge H a b)
+    (noncomplete : ∃ x y, x ≠ y ∧ ¬ H.Adj x y)
+    (three : MarkedThreeRealizable H a b) :
+    MarkedTwoRealizable H a b := by
+  obtain ⟨W, _, G, i, p, q, z, inj, edges, image, hp, hq, hz, _, _, _, labels, mark⟩ := three
+  obtain ⟨x, y, hxy, hnxy⟩ := noncomplete
+  have cx : Central G (i x) := (image (i x)).2 ⟨x, rfl⟩
+  have noOne : ¬ ∃ w, Covers G 1 w := by
+    intro hex
+    rcases within_one.1 ((cx 1 hex) (i y)) with e | e
+    · exact hxy (inj e)
+    · exact hnxy ((edges x y).1 e)
+  have hu := (endpoints_cover_two mark).1
+  have cov (w : V) : Covers G 2 (i w) :=
+    ((image (i w)).2 ⟨w, rfl⟩) 2 ⟨i a, hu⟩
+  have outsideLabel (t : W) (ht : ∀ w, i w ≠ t) : ¬ Central G t := by
+    intro ct
+    obtain ⟨w, hw⟩ := (image t).1 ct
+    exact ht w hw.symm
+  have farLabel (t : W) (ht : ∀ w, i w ≠ t) :
+      (¬ Short G t p) ∨ (¬ Short G t q) ∨ (¬ Short G t z) := by
+    obtain ⟨s, snc, sf⟩ := far_partner hu noOne (outsideLabel t ht)
+    rcases labels s with ⟨w, rfl⟩ | rfl | rfl | rfl
+    · exact (snc ((image (i w)).2 ⟨w, rfl⟩)).elim
+    · exact Or.inl sf
+    · exact Or.inr (Or.inl sf)
+    · exact Or.inr (Or.inr sf)
+  have pFar : (¬ Short G p q) ∨ (¬ Short G p z) :=
+    (farLabel p hp).resolve_left (fun f => f (Or.inl rfl))
+  have qFar : (¬ Short G q p) ∨ (¬ Short G q z) := by
+    rcases farLabel q hq with f | f | f
+    · exact Or.inl f
+    · exact (f (Or.inl rfl)).elim
+    · exact Or.inr f
+  have zFar : (¬ Short G z p) ∨ (¬ Short G z q) := by
+    rcases farLabel z hz with f | f | f
+    · exact Or.inl f
+    · exact Or.inr f
+    · exact (f (Or.inl rfl)).elim
+  apply (marked_two_realizable_iff h noncomplete).2
+  rcases pFar with fpq | fpz
+  · rcases zFar with fzp | fzq
+    · have perm : ∀ w, (∃ t, w = i t) ∨ w = q ∨ w = p ∨ w = z := by
+        intro w
+        rcases labels w with h | h | h | h
+        · exact Or.inl h
+        · exact Or.inr (Or.inr (Or.inl h))
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr (Or.inr h))
+      exact marked_partition_exists_of_three_path inj edges perm hq hp
+        (fun e => fpq (short_symm e)) fzp cov mark
+    · exact marked_partition_exists_of_three_path inj edges labels hp hq fpq fzq cov mark
+  · rcases qFar with fqp | fqz
+    · have perm : ∀ w, (∃ t, w = i t) ∨ w = q ∨ w = p ∨ w = z := by
+        intro w
+        rcases labels w with h | h | h | h
+        · exact Or.inl h
+        · exact Or.inr (Or.inr (Or.inl h))
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr (Or.inr h))
+      exact marked_partition_exists_of_three_path inj edges perm hq hp
+        fqp (fun e => fpz (short_symm e)) cov mark
+    · have perm : ∀ w, (∃ t, w = i t) ∨ w = p ∨ w = z ∨ w = q := by
+        intro w
+        rcases labels w with h | h | h | h
+        · exact Or.inl h
+        · exact Or.inr (Or.inl h)
+        · exact Or.inr (Or.inr (Or.inr h))
+        · exact Or.inr (Or.inr (Or.inl h))
+      exact marked_partition_exists_of_three_path inj edges perm hp hz fpz fqz cov mark
+
+end CenterDomination
+#print axioms CenterDomination.MarkedPartition.complement
+#print axioms CenterDomination.marked_partition_of_three_path
+#print axioms CenterDomination.marked_partition_exists_of_three_path
+#print axioms CenterDomination.marked_three_implies_two
