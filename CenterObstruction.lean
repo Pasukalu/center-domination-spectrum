@@ -745,7 +745,7 @@ private theorem noncomplete_of_not_self_centered {V : Type*}
   · subst r
     obtain ⟨w, cov⟩ := hex
     intro y
-    exact (cov x).symm.trans (cov y)
+    exact (show w = x from cov x).symm.trans (show w = y from cov y)
   · have h1 : Covers H 1 x := by
       intro y
       apply within_one.2
