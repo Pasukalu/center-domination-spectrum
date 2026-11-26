@@ -15,7 +15,7 @@ jobs:
           test: "false"
           use-mathlib-cache: "false"
           use-github-cache: "false"
-      - run: lake exe cache get Mathlib.Combinatorics.SimpleGraph.Metric Mathlib.Tactic.DeriveFintype Mathlib.Algebra.Order.Field.Rat Mathlib.Algebra.Order.BigOperators.Group.Finset
+      - run: lake exe cache get Mathlib.Combinatorics.SimpleGraph.Metric Mathlib.Combinatorics.SimpleGraph.Acyclic Mathlib.Tactic.DeriveFintype Mathlib.Algebra.Order.Field.Rat Mathlib.Algebra.Order.BigOperators.Group.Finset
       - run: python3 scripts/verify_lean.py
       - uses: actions/upload-artifact@v4
         if: always()
