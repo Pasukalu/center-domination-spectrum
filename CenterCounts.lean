@@ -736,7 +736,7 @@ theorem tree_has_longest_path [Fintype V] {T : SimpleGraph V} (tree : T.IsTree) 
       (∀ x y, T.dist x y ≤ p.length) := by
   classical
   letI : Nonempty V := tree.isConnected.nonempty
-  obtain ⟨a, b, p, hp, longest⟩ := T.exists_isPath_forall_isPath_length_le_length
+  obtain ⟨a, b, p, hp, longest⟩ := SimpleGraph.Walk.exists_isPath_forall_isPath_length_le_length T
   refine ⟨a, b, p, hp, ?_⟩
   intro x y
   obtain ⟨q, hq, eq⟩ := tree.isConnected.exists_path_of_dist x y
