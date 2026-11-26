@@ -513,7 +513,7 @@ theorem marked_three_implies_two {V : Type u} [Fintype V]
     · exact Or.inl f
     · exact Or.inr f
     · exact (f (Or.inl rfl)).elim
-  apply (marked_two_realizable_iff h noncomplete).2
+  apply (marked_two_realizable_iff h ⟨x, y, hxy, hnxy⟩).2
   rcases pFar with fpq | fpz
   · rcases zFar with fzp | fzq
     · have perm : ∀ w, (∃ t, w = i t) ∨ w = q ∨ w = p ∨ w = z := by
