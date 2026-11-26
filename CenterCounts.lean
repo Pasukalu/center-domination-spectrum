@@ -612,3 +612,213 @@ end CenterDomination
 #print axioms CenterDomination.finite_tree_distance_bound
 #print axioms CenterDomination.exists_bounded_spine_tree
 #print axioms CenterDomination.total_dom_card_ge_two
+
+
+namespace CenterDomination
+variable {V : Type*}
+
+/-- In a tree, a vertex has at most one adjacent vertex strictly closer
+to any fixed target. Two distinct shortest first steps would contradict
+uniqueness of paths. -/
+theorem tree_unique_closer {T : SimpleGraph V} (tree : T.IsTree)
+    {x y w z : V} (xy : T.Adj x y) (xw : T.Adj x w)
+    (hy : T.dist y z + 1 = T.dist x z)
+    (hw : T.dist w z + 1 = T.dist x z) : y = w := by
+  obtain ⟨p, hp⟩ := tree.isConnected.exists_walk_length_eq_dist y z
+  obtain ⟨q, hq⟩ := tree.isConnected.exists_walk_length_eq_dist w z
+  have lp : (p.cons xy).length = T.dist x z := by
+    simpa [hp] using hy
+  have lq : (q.cons xw).length = T.dist x z := by
+    simpa [hq] using hw
+  have eq := ExistsUnique.unique (tree.existsUnique_path x z)
+    ((p.cons xy).isPath_of_length_eq_dist lp)
+    ((q.cons xw).isPath_of_length_eq_dist lq)
+  have e := congrArg (fun r : T.Walk x z => r.getVert 1) eq
+  simpa using e
+
+/-- A unit-step sequence with no strict local maximum is bounded at each
+index by the larger remaining distance to its endpoints, provided both
+endpoint values are at most n. This is a purely arithmetic lemma. -/
+theorem no_peak_sequence_bound (f : ℕ → ℕ) (n : ℕ)
+    (ends : f 0 ≤ n ∧ f n ≤ n)
+    (step : ∀ j, j < n → f j + 1 = f (j + 1) ∨ f (j + 1) + 1 = f j)
+    (noPeak : ∀ j, j + 1 < n →
+      ¬ (f j + 1 = f (j + 1) ∧ f (j + 2) + 1 = f (j + 1)))
+    (i : ℕ) (hi : i ≤ n) : f i ≤ max i (n - i) := by
+  have down : ∀ j, j < n → f (j + 1) + 1 = f j →
+      f 0 = f (j + 1) + (j + 1) := by
+    intro j
+    induction j with
+    | zero =>
+      intro _ e
+      simpa using e.symm
+    | succ j ih =>
+      intro hj e
+      have prev : f (j + 1) + 1 = f j := by
+        rcases step j (by omega) with rise | fall
+        · exact (noPeak j (by omega) ⟨rise, e⟩).elim
+        · exact fall
+      have h := ih (by omega) prev
+      omega
+  have up : ∀ t j, j + 1 + t ≤ n → f j + 1 = f (j + 1) →
+      f (j + 1 + t) = f j + 1 + t := by
+    intro t
+    induction t with
+    | zero =>
+      intro j _ rise
+      simpa using rise.symm
+    | succ t ih =>
+      intro j hj rise
+      have nextRise : f (j + 1) + 1 = f (j + 2) := by
+        rcases step (j + 1) (by omega) with yes | no
+        · exact yes
+        · exact (noPeak j (by omega) ⟨rise, no⟩).elim
+      have rest := ih (j + 1) (by omega) nextRise
+      have index : j + 1 + (t + 1) = j + 1 + 1 + t := by omega
+      rw [index, rest]
+      omega
+  cases i with
+  | zero =>
+    simpa using ends.1
+  | succ j =>
+    rcases step j (by omega) with rise | fall
+    · have h := up (n - (j + 1)) j (by omega) rise
+      have eq : j + 1 + (n - (j + 1)) = n := by omega
+      rw [eq] at h
+      have le : f (j + 1) ≤ j + 1 := by omega
+      exact le.trans (le_max_left _ _)
+    · have h := down j (by omega) fall
+      have le : f (j + 1) ≤ n - (j + 1) := by omega
+      exact le.trans (le_max_right _ _)
+
+/-- On a path of maximum length, the distance from its i-th vertex to
+every target is bounded by max(i, length-i). The tree property enters
+through the unique closer-neighbor lemma. -/
+theorem tree_longest_path_bound {T : SimpleGraph V} (tree : T.IsTree)
+    {a b : V} (p : T.Walk a b) (hp : p.IsPath)
+    (diam : ∀ x y, T.dist x y ≤ p.length)
+    (i : ℕ) (hi : i ≤ p.length) (z : V) :
+    T.dist (p.getVert i) z ≤ max i (p.length - i) := by
+  let f : ℕ → ℕ := fun j => T.dist z (p.getVert j)
+  have steps : ∀ j, j < p.length →
+      f j + 1 = f (j + 1) ∨ f (j + 1) + 1 = f j := by
+    intro j hj
+    rcases tree.dist_eq_dist_add_one_of_adj z (p.adj_getVert_succ hj) with h | h
+    · exact Or.inr h.symm
+    · exact Or.inl h.symm
+  have noPeak : ∀ j, j + 1 < p.length →
+      ¬ (f j + 1 = f (j + 1) ∧ f (j + 2) + 1 = f (j + 1)) := by
+    intro j hj h
+    have e1 := p.adj_getVert_succ (i := j) (by omega)
+    have e2 := p.adj_getVert_succ (i := j + 1) hj
+    have hy : T.dist (p.getVert j) z + 1 = T.dist (p.getVert (j + 1)) z := by
+      rw [SimpleGraph.dist_comm (u := p.getVert j) (v := z),
+        SimpleGraph.dist_comm (u := p.getVert (j + 1)) (v := z)]
+      exact h.1
+    have hw : T.dist (p.getVert (j + 2)) z + 1 = T.dist (p.getVert (j + 1)) z := by
+      rw [SimpleGraph.dist_comm (u := p.getVert (j + 2)) (v := z),
+        SimpleGraph.dist_comm (u := p.getVert (j + 1)) (v := z)]
+      exact h.2
+    have eq := tree_unique_closer tree e1.symm e2 hy hw
+    have indices : j = j + 2 := hp.getVert_injOn
+      (show j ≤ p.length by omega) (show j + 2 ≤ p.length by omega) eq
+    omega
+  have ends : f 0 ≤ p.length ∧ f p.length ≤ p.length := by
+    simpa [f] using And.intro (diam z a) (diam z b)
+  have bound := no_peak_sequence_bound f p.length ends steps noPeak i hi
+  rw [SimpleGraph.dist_comm]
+  exact bound
+
+/-- Existence of a longest path in a finite tree, with the actual metric
+bound. This uses Mathlib's finite-path maximum, not a hypothesized diameter. -/
+theorem tree_has_longest_path [Fintype V] {T : SimpleGraph V} (tree : T.IsTree) :
+    ∃ (a b : V) (p : T.Walk a b), p.IsPath ∧
+      (∀ x y, T.dist x y ≤ p.length) := by
+  classical
+  letI : Nonempty V := tree.isConnected.nonempty
+  obtain ⟨a, b, p, hp, longest⟩ := T.exists_isPath_forall_isPath_length_le_length
+  refine ⟨a, b, p, hp, ?_⟩
+  intro x y
+  obtain ⟨q, hq, eq⟩ := tree.isConnected.exists_path_of_dist x y
+  rw [← eq]
+  exact longest x y q hq
+
+/-- The actual midpoint ball of a longest path covers the whole finite
+tree. In the odd-length case the two consecutive midpoint vertices
+both cover with the same rounded-up radius. -/
+theorem tree_midpoint_covers [Fintype V] {T : SimpleGraph V} (tree : T.IsTree)
+    {r : ℕ} (hr : 1 ≤ r) (bound : ∀ x y, T.dist x y ≤ 2 * r - 1) :
+    (∃ w, Covers T (r - 1) w) ∨
+      ∃ u v, T.Adj u v ∧ Covers T r u ∧ Covers T r v := by
+  obtain ⟨a, b, p, hp, diam⟩ := tree_has_longest_path tree
+  obtain ⟨q, hq, eq⟩ := tree.isConnected.exists_path_of_dist a b
+  have pq : p = q := ExistsUnique.unique (tree.existsUnique_path a b) hp hq
+  have len : p.length ≤ 2 * r - 1 := by rw [pq, eq]; exact bound a b
+  by_cases small : p.length ≤ 2 * (r - 1)
+  · refine Or.inl ⟨p.getVert (p.length / 2), ?_⟩
+    intro z
+    apply (within_iff_dist tree.isConnected _ _ _).2
+    have h := tree_longest_path_bound tree p hp diam (p.length / 2) (by omega) z
+    omega
+  · have eqLen : p.length = 2 * r - 1 := by omega
+    refine Or.inr ⟨p.getVert (r - 1), p.getVert r, ?_, ?_, ?_⟩
+    · have edge := p.adj_getVert_succ (i := r - 1) (by omega)
+      have e : r - 1 + 1 = r := by omega
+      simpa only [e] using edge
+    · intro z
+      apply (within_iff_dist tree.isConnected _ _ _).2
+      have h := tree_longest_path_bound tree p hp diam (r - 1) (by omega) z
+      omega
+    · intro z
+      apply (within_iff_dist tree.isConnected _ _ _).2
+      have h := tree_longest_path_bound tree p hp diam r (by omega) z
+      omega
+
+/-- A covering ball on the spine becomes a ball one larger in the
+original graph because every vertex has a neighbor in D ⊆ K. -/
+theorem spine_cover_lift {G : SimpleGraph V} {D K : Finset V}
+    {T : SimpleGraph (↑K : Set V)} (inc : T ≤ G.induce (↑K : Set V))
+    (contain : D ⊆ K) (dom : ∀ x, ∃ d ∈ D, G.Adj d x)
+    {r : ℕ} {w : (↑K : Set V)} (cov : Covers T r w) :
+    Covers G (r + 1) w.val := by
+  let f : T →g G :=
+    { toFun := Subtype.val
+      map_rel' := fun e => inc e }
+  intro x
+  obtain ⟨d, hd, edge⟩ := dom x
+  let z : (↑K : Set V) := ⟨d, contain hd⟩
+  obtain ⟨p, hp⟩ := (within_iff_walk T r w z).1 (cov z)
+  apply (within_iff_walk G (r + 1) w.val x).2
+  refine ⟨(p.map f).concat edge, ?_⟩
+  simpa using Nat.add_le_add_right hp 1
+
+/-- The unconditional strict mean theorem (catalogue no. 268), for every
+total dominating set of every finite connected graph. -/
+theorem claim268 [Fintype V] (G : SimpleGraph V) : Claim268 G := by
+  classical
+  intro hc D dom
+  have hk := total_dom_card_ge_two hc D dom
+  obtain ⟨K, T, contain, inc, tree, count, diam⟩ :=
+    exists_bounded_spine_tree hc D dom
+  have bound : ∀ x y, T.dist x y ≤ 2 * (D.card - 1) - 1 := by
+    intro x y
+    have d := diam x y
+    omega
+  rcases tree_midpoint_covers tree (r := D.card - 1) (by omega) bound with
+    ⟨w, cov⟩ | ⟨u, v, edge, cu, cv⟩
+  · have lift := spine_cover_lift inc contain dom cov
+    exact strict_mean_of_geometric_alternatives hc (by omega)
+      (Or.inl ⟨w.val, covers_mono lift (by omega)⟩)
+  · have edge' : G.Adj u.val v.val := inc edge
+    exact strict_mean_of_adjacent_covers hc hk edge'
+      (covers_mono (spine_cover_lift inc contain dom cu) (by omega))
+      (covers_mono (spine_cover_lift inc contain dom cv) (by omega))
+
+end CenterDomination
+#print axioms CenterDomination.tree_unique_closer
+#print axioms CenterDomination.no_peak_sequence_bound
+#print axioms CenterDomination.tree_longest_path_bound
+#print axioms CenterDomination.tree_has_longest_path
+#print axioms CenterDomination.tree_midpoint_covers
+#print axioms CenterDomination.spine_cover_lift
+#print axioms CenterDomination.claim268
